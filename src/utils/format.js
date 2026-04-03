@@ -41,3 +41,15 @@ export function formatShortDate(isoDate) {
 export function monthKey(iso) {
   return iso.slice(0, 7)
 }
+
+/**
+ * Description for tables / exports: uses note when set, otherwise a readable default.
+ * @param {{ note?: string, category: string, type: 'income' | 'expense' }} tx
+ */
+export function transactionDescription(tx) {
+  const n = tx.note?.trim()
+  if (n) return n
+  return tx.type === 'income'
+    ? `${tx.category} income`
+    : `${tx.category} expense`
+}

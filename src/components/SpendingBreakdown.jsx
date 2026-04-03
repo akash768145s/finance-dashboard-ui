@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import {
   Cell,
-  Legend,
   Pie,
   PieChart,
   ResponsiveContainer,
@@ -9,18 +8,14 @@ import {
 } from 'recharts'
 import { formatCurrency } from '../utils/format'
 import { useSpendingByCategory } from '../hooks/useFinanceMetrics'
-import { PieChartIcon } from 'lucide-react'
 
 const PIE_COLORS = [
-  '#0d9488',
-  '#e11d48',
-  '#7c3aed',
-  '#ea580c',
-  '#2563eb',
-  '#ca8a04',
-  '#059669',
-  '#db2777',
-  '#64748b',
+  '#0b3c92',
+  '#5ed4a6',
+  '#5a6e8d',
+  '#cad5f3',
+  '#f7b267',
+  '#de6e4b',
 ]
 
 function TooltipContent({ active, payload }) {
@@ -34,6 +29,15 @@ function TooltipContent({ active, payload }) {
   )
 }
 
+function formatCompactCurrency(value) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value)
+}
+
 export function SpendingBreakdown() {
   const data = useSpendingByCategory()
   const total = useMemo(
@@ -44,10 +48,7 @@ export function SpendingBreakdown() {
   if (data.length === 0) {
     return (
       <section className="dash-panel" aria-labelledby="spend-heading">
-        <h2 id="spend-heading" className="dash-panel__title">
-          <PieChartIcon size={16} />
-          Spending by category
-        </h2>
+        <h2 id="spend-heading" className="dash-panel__title">Spending by category</h2>
         <p className="dash-empty dash-empty--inline">
           No expense transactions yet.
         </p>
@@ -56,25 +57,24 @@ export function SpendingBreakdown() {
   }
 
   return (
-    <section className="dash-panel" aria-labelledby="spend-heading">
-      <h2 id="spend-heading" className="dash-panel__title">
-        <PieChartIcon size={16} />
-        Spending by category
-      </h2>
-      <p className="dash-panel__desc">
-        Share of total expenses · {formatCurrency(total)} overall
-      </p>
-      <div className="dash-chart-wrap dash-chart-wrap--pie">
-        <ResponsiveContainer width="100%" height={280}>
-          <PieChart>
+    <section className="dash-panel dash-panel--donut" aria-labelledby="spend-heading">
+      <h2 id="spend-heading" className="dash-panel__title">Spending by Category</h2>
+      <p className="dash-panel__desc">Monthly breakdown</p>
+      <div className="dash-chart-wrap dash-chart-wrap--pie-modern">
+        <div className="dash-donut__center">
+          <span className="dash-donut__value">{formatCompactCurrency(total)}</span>
+          <span className="dash-donut__label">TOTAL SPENT</span>
+        </div>
+        <ResponsiveContainer width="100%" height={198}>
+          <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <Pie
               data={data}
               dataKey="value"
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={56}
-              outerRadius={88}
+              innerRadius={54}
+              outerRadius={77}
               paddingAngle={2}
             >
               {data.map((_, i) => (
@@ -86,15 +86,26 @@ export function SpendingBreakdown() {
               ))}
             </Pie>
             <Tooltip content={<TooltipContent />} />
-            <Legend
-              verticalAlign="bottom"
-              formatter={(value) => (
-                <span className="dash-legend-label">{value}</span>
-              )}
-            />
           </PieChart>
         </ResponsiveContainer>
       </div>
+      <ul className="dash-donut__legend">
+        {data.slice(0, 4).map((item, idx) => {
+          const percentage = total > 0 ? Math.round((item.value / total) * 100) : 0
+          return (
+            <li key={item.name} className="dash-donut__legend-item">
+              <span className="dash-donut__legend-left">
+                <span
+                  className="dash-donut__dot"
+                  style={{ backgroundColor: PIE_COLORS[idx % PIE_COLORS.length] }}
+                />
+                {item.name}
+              </span>
+              <span className="dash-donut__legend-pct">{`${percentage}%`}</span>
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }

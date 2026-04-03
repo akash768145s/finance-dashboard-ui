@@ -1,44 +1,144 @@
 import { formatCurrency } from '../utils/format'
-import { useSummary } from '../hooks/useFinanceMetrics'
-import { ArrowDownCircle, ArrowUpCircle, Wallet } from 'lucide-react'
+import { useInsights, useSummary } from '../hooks/useFinanceMetrics'
+import {
+  ArrowDown,
+  ArrowUp,
+  Landmark,
+  TrendingUp,
+  Wallet,
+} from 'lucide-react'
 
 export function SummaryCards() {
   const { balance, income, expenses } = useSummary()
+  const { incomeLast, expenseLast, monthDeltaPct } = useInsights()
+  const netCash = income - expenses
+  const growthPct = income > 0 ? ((income - expenses) / income) * 100 : 0
+  const incomePct =
+    incomeLast > 0 ? ((income - incomeLast) / incomeLast) * 100 : null
+  const expensePct =
+    expenseLast > 0 ? ((expenses - expenseLast) / expenseLast) * 100 : null
+
+  const buildTrend = (pct, kind) => {
+    if (pct === null) {
+      return {
+        text: 'No previous month data',
+        isUp: true,
+        tone: 'neutral',
+      }
+    }
+
+    const isUp = pct >= 0
+    const pctText = `${Math.abs(pct).toFixed(1)}% from last month`
+    const tone =
+      kind === 'income' ? (isUp ? 'good' : 'bad') : isUp ? 'bad' : 'good'
+
+    return { text: pctText, isUp, tone }
+  }
+
+  const incomeTrend = buildTrend(incomePct, 'income')
+  const expenseTrend = buildTrend(expensePct, 'expense')
+  const netTrend = buildTrend(monthDeltaPct, 'income')
 
   return (
-    <section className="dash-section" aria-labelledby="summary-heading">
-      <h2 id="summary-heading" className="dash-section__title">
-        <Wallet size={16} />
-        Overview
+    <section className="dash-overview" aria-labelledby="summary-heading">
+      <h2 id="summary-heading" className="dash-overview__title">
+        Financial Overview
       </h2>
-      <div className="dash-cards">
-        <article className="dash-card dash-card--balance">
-          <span className="dash-card__label">
-            <Wallet size={13} />
-            Total balance
+      <div className="dash-overview__cards">
+        <article className="dash-overview-card dash-overview-card--networth">
+          <div className="dash-overview-card__head">
+            <span className="dash-overview-card__label dash-overview-card__label--caps dash-overview-card__label--networth">
+              Available Funds
+            </span>
+            <span className="dash-overview-card__icon dash-overview-card__icon--networth">
+              <Landmark size={22} />
+            </span>
+          </div>
+          <p className="dash-overview-card__value">{formatCurrency(balance)}</p>
+          <span className="dash-overview-card__pill">
+            <TrendingUp size={13} />
+            {`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}% from last month`}
           </span>
-          <p className="dash-card__value">{formatCurrency(balance)}</p>
-          <span className="dash-card__hint">After all recorded activity</span>
         </article>
-        <article className="dash-card dash-card--income">
-          <span className="dash-card__label">
-            <ArrowUpCircle size={13} />
-            Income
-          </span>
-          <p className="dash-card__value dash-card__value--income">
-            {formatCurrency(income)}
+        <article className="dash-overview-card dash-overview-card--metric">
+          <div className="dash-overview-card__head">
+            <span className="dash-overview-card__label dash-overview-card__label--caps">
+              Total Income
+            </span>
+            <span className="dash-overview-card__icon dash-overview-card__icon--income">
+              <ArrowDown size={16} />
+            </span>
+          </div>
+          <p className="dash-overview-card__value dash-overview-card__value--income">
+            +{formatCurrency(income)}
           </p>
-          <span className="dash-card__hint">Lifetime inflows</span>
+          <p
+            className={`dash-overview-card__delta dash-overview-card__delta--${incomeTrend.tone}`}
+          >
+            {incomePct !== null && (
+              <span className="dash-overview-card__delta-icon">
+                <ArrowUp size={15} strokeWidth={2.8} />
+              </span>
+            )}
+            {incomeTrend.text}
+          </p>
         </article>
-        <article className="dash-card dash-card--expense">
-          <span className="dash-card__label">
-            <ArrowDownCircle size={13} />
-            Expenses
-          </span>
-          <p className="dash-card__value dash-card__value--expense">
-            {formatCurrency(expenses)}
+        <article className="dash-overview-card dash-overview-card--metric">
+          <div className="dash-overview-card__head">
+            <span className="dash-overview-card__label dash-overview-card__label--caps">
+              Total Expenses
+            </span>
+            <span className="dash-overview-card__icon dash-overview-card__icon--expense">
+              <ArrowUp size={16} />
+            </span>
+          </div>
+          <p className="dash-overview-card__value dash-overview-card__value--expense">
+            -{formatCurrency(expenses)}
           </p>
-          <span className="dash-card__hint">Lifetime outflows</span>
+          <p
+            className={`dash-overview-card__delta dash-overview-card__delta--${expenseTrend.tone}`}
+          >
+            {expensePct !== null && (
+              <span className="dash-overview-card__delta-icon">
+                <ArrowDown size={15} strokeWidth={2.8} />
+              </span>
+            )}
+            {expenseTrend.text}
+          </p>
+        </article>
+        <article className="dash-overview-card dash-overview-card--metric">
+          <div className="dash-overview-card__head">
+            <span className="dash-overview-card__label dash-overview-card__label--caps">
+              Net Cash Flow
+            </span>
+            <span className="dash-overview-card__icon dash-overview-card__icon--net">
+              <Wallet size={16} />
+            </span>
+          </div>
+          <p
+            className={
+              netCash >= 0
+                ? 'dash-overview-card__value dash-overview-card__value--income'
+                : 'dash-overview-card__value dash-overview-card__value--expense'
+            }
+          >
+            {netCash >= 0 ? '+' : '-'}
+            {formatCurrency(Math.abs(netCash))}
+          </p>
+          <p
+            className={`dash-overview-card__delta dash-overview-card__delta--${netTrend.tone}`}
+          >
+            {monthDeltaPct !== null && (
+              <span className="dash-overview-card__delta-icon">
+                {netTrend.tone === 'bad' ? (
+                  <ArrowDown size={15} strokeWidth={2.8} />
+                ) : (
+                  <ArrowUp size={15} strokeWidth={2.8} />
+                )}
+              </span>
+            )}
+            {netTrend.text}
+          </p>
         </article>
       </div>
     </section>

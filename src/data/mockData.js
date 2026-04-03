@@ -49,6 +49,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 45,
     category: 'Transport',
     type: 'expense',
+    note: 'Metro pass top-up',
   },
   {
     id: 't4',
@@ -56,6 +57,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 89.99,
     category: 'Shopping',
     type: 'expense',
+    note: 'Online order — household items',
   },
   {
     id: 't5',
@@ -71,6 +73,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 210,
     category: 'Bills',
     type: 'expense',
+    note: 'Electric bill — October',
   },
   {
     id: 't7',
@@ -78,6 +81,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 55.2,
     category: 'Food',
     type: 'expense',
+    note: 'Coffee & snacks',
   },
   {
     id: 't8',
@@ -85,6 +89,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 29.99,
     category: 'Entertainment',
     type: 'expense',
+    note: 'Streaming subscription',
   },
   {
     id: 't9',
@@ -92,6 +97,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 4_500,
     category: 'Salary',
     type: 'income',
+    note: 'Monthly payroll',
   },
   {
     id: 't10',
@@ -99,6 +105,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 142.3,
     category: 'Food',
     type: 'expense',
+    note: 'Weekly groceries',
   },
   {
     id: 't11',
@@ -106,6 +113,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 60,
     category: 'Transport',
     type: 'expense',
+    note: 'Airport rideshare',
   },
   {
     id: 't12',
@@ -113,6 +121,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 199,
     category: 'Shopping',
     type: 'expense',
+    note: 'Running shoes',
   },
   {
     id: 't13',
@@ -128,6 +137,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 220,
     category: 'Bills',
     type: 'expense',
+    note: 'Fiber internet',
   },
   {
     id: 't15',
@@ -135,6 +145,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 400,
     category: 'Freelance',
     type: 'income',
+    note: 'Invoice #1042 — logo draft',
   },
   {
     id: 't16',
@@ -142,6 +153,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 4_500,
     category: 'Salary',
     type: 'income',
+    note: 'Monthly payroll',
   },
   {
     id: 't17',
@@ -149,6 +161,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 78.5,
     category: 'Food',
     type: 'expense',
+    note: 'Team dinner',
   },
   {
     id: 't18',
@@ -156,6 +169,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 350,
     category: 'Shopping',
     type: 'expense',
+    note: 'Holiday gifts',
   },
   {
     id: 't19',
@@ -163,6 +177,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 125,
     category: 'Bills',
     type: 'expense',
+    note: 'Gas & water',
   },
   {
     id: 't20',
@@ -170,6 +185,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 42,
     category: 'Transport',
     type: 'expense',
+    note: 'City parking',
   },
   {
     id: 't21',
@@ -177,6 +193,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 180,
     category: 'Entertainment',
     type: 'expense',
+    note: 'Theater tickets',
   },
   {
     id: 't22',
@@ -184,6 +201,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 750,
     category: 'Freelance',
     type: 'income',
+    note: 'Q4 milestone — dashboard UI',
   },
   {
     id: 't23',
@@ -191,6 +209,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 4_500,
     category: 'Salary',
     type: 'income',
+    note: 'Monthly payroll',
   },
   {
     id: 't24',
@@ -198,6 +217,7 @@ export const INITIAL_TRANSACTIONS = [
     amount: 98.2,
     category: 'Food',
     type: 'expense',
+    note: 'Weekend takeout',
   },
   {
     id: 't25',
@@ -205,5 +225,6 @@ export const INITIAL_TRANSACTIONS = [
     amount: 15.99,
     category: 'Other',
     type: 'expense',
+    note: 'App store purchase',
   },
 ]

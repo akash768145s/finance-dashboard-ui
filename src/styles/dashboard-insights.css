@@ -1,0 +1,48 @@
+/* —— Insights route —— */
+.dash-insights {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.dash-insight {
+  background: linear-gradient(160deg,
+      color-mix(in oklab, var(--surface-2) 92%, white 8%),
+      var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.dash-insight__label {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  line-height: var(--leading-snug);
+}
+
+.dash-insight__value {
+  font-size: var(--text-md);
+  color: var(--text-heading);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  letter-spacing: -0.01em;
+}
+
+.dash-insight__meta {
+  font-size: var(--text-sm);
+  color: var(--text);
+  font-weight: 500;
+  line-height: var(--leading-normal);
+}

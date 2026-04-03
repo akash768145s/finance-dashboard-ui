@@ -1,12 +1,15 @@
-import { useMemo, useState } from 'react'
-import { CATEGORIES } from '../data/mockData'
+import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import { useFinanceStore } from '../store/useFinanceStore'
 import { useFilteredTransactions } from '../hooks/useFinanceMetrics'
-import { formatCurrency, formatDate } from '../utils/format'
+import { formatCurrency, formatDate, transactionDescription } from '../utils/format'
 import { TransactionModal } from './TransactionModal'
 import { ConfirmDialog } from './ConfirmDialog'
+import { CategoryIcon } from './CategoryIcon'
+import { CategoryFilterDropdown } from './CategoryFilterDropdown'
 import {
   ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
   Download,
   FileJson,
   ListFilter,
@@ -17,17 +20,19 @@ import {
   Trash2,
 } from 'lucide-react'
 
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100]
+
 function exportCsv(rows) {
-  const header = ['date', 'amount', 'category', 'type', 'note']
+  const header = ['date', 'description', 'category', 'type', 'amount']
   const lines = [
     header.join(','),
     ...rows.map((r) =>
       [
         r.date,
-        r.amount,
+        JSON.stringify(transactionDescription(r)),
         JSON.stringify(r.category),
         r.type,
-        JSON.stringify(r.note ?? ''),
+        r.amount,
       ].join(','),
     ),
   ]
@@ -69,11 +74,16 @@ export function TransactionsPanel() {
   const filtered = useFilteredTransactions()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(
-    /** @type {null | import('../data/mockData').Transaction} */ (null),
+    /** @type {null | import('../data/mockData').Transaction} */(null),
   )
   const [deleteTarget, setDeleteTarget] = useState(
-    /** @type {null | import('../data/mockData').Transaction} */ (null),
+    /** @type {null | import('../data/mockData').Transaction} */(null),
   )
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [exportMenuOpen, setExportMenuOpen] = useState(false)
+  const exportMenuRef = useRef(/** @type {HTMLDivElement | null} */(null))
+  const pageSizeId = useId()
 
   const sortOptions = useMemo(
     () => [
@@ -83,6 +93,39 @@ export function TransactionsPanel() {
     ],
     [],
   )
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+
+  const paginatedRows = useMemo(() => {
+    const start = (page - 1) * pageSize
+    return filtered.slice(start, start + pageSize)
+  }, [filtered, page, pageSize])
+
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery, filterCategory, filterType, sortBy, sortDir])
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages)
+  }, [page, totalPages])
+
+  useEffect(() => {
+    if (!exportMenuOpen) return
+    const onDoc = (e) => {
+      const el = exportMenuRef.current
+      if (!el || !(e.target instanceof Node)) return
+      if (!el.contains(e.target)) setExportMenuOpen(false)
+    }
+    const onKey = (e) => {
+      if (e.key === 'Escape') setExportMenuOpen(false)
+    }
+    document.addEventListener('mousedown', onDoc)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDoc)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [exportMenuOpen])
 
   return (
     <section className="dash-section" aria-labelledby="tx-heading">
@@ -105,22 +148,46 @@ export function TransactionsPanel() {
               Add transaction
             </button>
           )}
-          <button
-            type="button"
-            className="dash-btn dash-btn--ghost"
-            onClick={() => exportCsv(filtered)}
-          >
-            <Download size={15} />
-            Export CSV
-          </button>
-          <button
-            type="button"
-            className="dash-btn dash-btn--ghost"
-            onClick={() => exportJson(filtered)}
-          >
-            <FileJson size={15} />
-            Export JSON
-          </button>
+          <div className="dash-export" ref={exportMenuRef}>
+            <button
+              type="button"
+              className="dash-btn dash-btn--ghost"
+              aria-expanded={exportMenuOpen}
+              aria-haspopup="menu"
+              onClick={() => setExportMenuOpen((o) => !o)}
+            >
+              <Download size={15} />
+              Export
+            </button>
+            {exportMenuOpen && (
+              <div className="dash-export__menu" role="menu" aria-label="Export format">
+                <button
+                  type="button"
+                  className="dash-export__item"
+                  role="menuitem"
+                  onClick={() => {
+                    exportCsv(filtered)
+                    setExportMenuOpen(false)
+                  }}
+                >
+                  <Download size={15} aria-hidden />
+                  Download CSV
+                </button>
+                <button
+                  type="button"
+                  className="dash-export__item"
+                  role="menuitem"
+                  onClick={() => {
+                    exportJson(filtered)
+                    setExportMenuOpen(false)
+                  }}
+                >
+                  <FileJson size={15} aria-hidden />
+                  Download JSON
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -139,21 +206,10 @@ export function TransactionsPanel() {
             aria-label="Search transactions"
           />
         </label>
-        <label className="dash-field">
-          <span className="dash-field__label">Category</span>
-          <select
-            className="dash-select"
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-          >
-            <option value="all">All</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
+        <CategoryFilterDropdown
+          value={filterCategory}
+          onChange={setFilterCategory}
+        />
         <label className="dash-field">
           <span className="dash-field__label">Type</span>
           <select
@@ -184,28 +240,13 @@ export function TransactionsPanel() {
                 sortDir,
               )
             }
+            aria-label="Sort transactions by"
           >
             {sortOptions.map((o) => (
               <option key={o.value} value={o.value}>
                 {o.label}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="dash-field">
-          <span className="dash-field__label">Order</span>
-          <select
-            className="dash-select"
-            value={sortDir}
-            onChange={(e) =>
-              setSort(
-                sortBy,
-                /** @type {'asc' | 'desc'} */(e.target.value),
-              )
-            }
-          >
-            <option value="desc">Descending</option>
-            <option value="asc">Ascending</option>
           </select>
         </label>
         <button
@@ -249,71 +290,138 @@ export function TransactionsPanel() {
             </button>
           </div>
         ) : (
-          <table className="dash-table">
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col">Amount</th>
-                <th scope="col">Category</th>
-                <th scope="col">Type</th>
-                <th scope="col">Note</th>
-                {isAdmin && <th scope="col">Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((t) => (
-                <tr key={t.id}>
-                  <td>{formatDate(t.date)}</td>
-                  <td
-                    className={
-                      t.type === 'income'
-                        ? 'dash-num dash-num--income'
-                        : 'dash-num dash-num--expense'
-                    }
+          <>
+            <div className="dash-table-scroll">
+              <table className="dash-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Category</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Amount</th>
+                    {isAdmin && <th scope="col">Actions</th>}
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedRows.map((t) => (
+                    <tr key={t.id}>
+                      <td>{formatDate(t.date)}</td>
+                      <td className="dash-table__note">
+                        {transactionDescription(t)}
+                      </td>
+                      <td>
+                        <span className="dash-table__category">
+                          <CategoryIcon category={t.category} size={16} />
+                          {t.category}
+                        </span>
+                      </td>
+                      <td>
+                        <span
+                          className={
+                            t.type === 'income'
+                              ? 'dash-badge dash-badge--income'
+                              : 'dash-badge dash-badge--expense'
+                          }
+                        >
+                          {t.type}
+                        </span>
+                      </td>
+                      <td
+                        className={
+                          t.type === 'income'
+                            ? 'dash-num dash-num--income'
+                            : 'dash-num dash-num--expense'
+                        }
+                      >
+                        {t.type === 'income' ? '+' : '−'}
+                        {formatCurrency(t.amount)}
+                      </td>
+                      {isAdmin && (
+                        <td className="dash-table__actions">
+                          <button
+                            type="button"
+                            className="dash-link-btn"
+                            onClick={() => {
+                              setEditing(t)
+                              setModalOpen(true)
+                            }}
+                          >
+                            <SquarePen size={14} />
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            className="dash-link-btn dash-link-btn--danger"
+                            onClick={() => setDeleteTarget(t)}
+                          >
+                            <Trash2 size={14} />
+                            Delete
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <footer className="dash-pagination" aria-label="Table pagination">
+              <p className="dash-pagination__range">
+                Showing{' '}
+                <strong>
+                  {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filtered.length)}
+                </strong>{' '}
+                of <strong>{filtered.length}</strong> results
+              </p>
+              <div className="dash-pagination__actions">
+                <label className="dash-pagination__rpp" htmlFor={pageSizeId}>
+                  <span className="dash-pagination__rpp-label">Rows per page</span>
+                  <select
+                    id={pageSizeId}
+                    className="dash-pagination__rpp-select"
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value))
+                      setPage(1)
+                    }}
                   >
-                    {t.type === 'income' ? '+' : '−'}
-                    {formatCurrency(t.amount)}
-                  </td>
-                  <td>{t.category}</td>
-                  <td>
-                    <span
-                      className={
-                        t.type === 'income'
-                          ? 'dash-badge dash-badge--income'
-                          : 'dash-badge dash-badge--expense'
-                      }
-                    >
-                      {t.type}
+                    {PAGE_SIZE_OPTIONS.map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="dash-pagination__nav" role="group" aria-label="Page navigation">
+                  <button
+                    type="button"
+                    className="dash-pagination__nav-btn dash-pagination__nav-btn--icon"
+                    disabled={page <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft size={18} strokeWidth={2.25} aria-hidden />
+                  </button>
+                  <span className="dash-pagination__status" aria-live="polite">
+                    <span className="dash-pagination__status-part">Page</span>
+                    <span className="dash-pagination__status-curr">{page}</span>
+                    <span className="dash-pagination__status-part">
+                      of {totalPages}
                     </span>
-                  </td>
-                  <td className="dash-table__note">{t.note ?? '—'}</td>
-                  {isAdmin && (
-                    <td className="dash-table__actions">
-                      <button
-                        type="button"
-                        className="dash-link-btn"
-                        onClick={() => {
-                          setEditing(t)
-                          setModalOpen(true)
-                        }}
-                      >
-                        <SquarePen size={14} />
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        className="dash-link-btn dash-link-btn--danger"
-                        onClick={() => setDeleteTarget(t)}
-                      >
-                        <Trash2 size={14} />
-                        Delete
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </span>
+                  <button
+                    type="button"
+                    className="dash-pagination__nav-btn dash-pagination__nav-btn--icon"
+                    disabled={page >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    aria-label="Next page"
+                  >
+                    <ChevronRight size={18} strokeWidth={2.25} aria-hidden />
+                  </button>
+                </div>
+              </div>
+            </footer>
+          </>
         )}
       </div>
 

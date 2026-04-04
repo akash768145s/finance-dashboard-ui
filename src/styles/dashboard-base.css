@@ -476,9 +476,11 @@
 }
 
 .dash-header__role .dash-select {
-  min-width: 165px;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
   min-height: 34px;
-  padding: 0.3rem 0.55rem;
+  padding: 0.3rem 0.45rem 0.3rem 0.55rem;
   border-radius: 9px;
   border-color: transparent;
   background: transparent;
@@ -487,6 +489,8 @@
 
 .dash-header__role {
   position: relative;
+  display: inline-flex;
+  max-width: 100%;
   padding-left: 0.55rem;
 }
 
@@ -534,8 +538,13 @@
     min-width: 0;
   }
 
+  .dash-header__role {
+    flex: 0 0 auto;
+  }
+
   .dash-header__role .dash-select {
-    width: 100%;
+    width: max-content;
+    max-width: min(100%, 200px);
     min-width: 0;
   }
 

@@ -102,21 +102,6 @@ export function useInsights() {
   const transactions = useFinanceStore((s) => s.transactions)
 
   return useMemo(() => {
-    const byCat = new Map()
-    for (const t of transactions) {
-      if (t.type !== 'expense') continue
-      byCat.set(t.category, (byCat.get(t.category) ?? 0) + t.amount)
-    }
-
-    let topCat = null
-    let topAmt = 0
-    for (const [cat, amt] of byCat) {
-      if (amt > topAmt) {
-        topAmt = amt
-        topCat = cat
-      }
-    }
-
     const monthSet = new Set(transactions.map((t) => monthKey(t.date)))
     const monthsSorted = [...monthSet].sort()
     const lastM = monthsSorted[monthsSorted.length - 1]
@@ -134,6 +119,56 @@ export function useInsights() {
       return { income, expense }
     }
 
+    function expensesByCategoryInMonth(mk) {
+      const map = new Map()
+      if (!mk) return map
+      for (const t of transactions) {
+        if (t.type !== 'expense' || monthKey(t.date) !== mk) continue
+        map.set(t.category, (map.get(t.category) ?? 0) + t.amount)
+      }
+      return map
+    }
+
+    const byCatMonth = expensesByCategoryInMonth(lastM)
+    let topCat = null
+    let topAmt = 0
+    for (const [cat, amt] of byCatMonth) {
+      if (amt > topAmt) {
+        topAmt = amt
+        topCat = cat
+      }
+    }
+
+    const expenseThisTotal = [...byCatMonth.values()].reduce((a, b) => a + b, 0)
+    const topPctOfMonth =
+      expenseThisTotal > 0 ? (topAmt / expenseThisTotal) * 100 : null
+    const otherCategoriesSpend = Math.max(0, expenseThisTotal - topAmt)
+
+    const monthlyExpenses = monthsSorted.map((mk) => monthTotals(mk).expense)
+
+    let spendingPattern = 'unknown'
+    if (monthlyExpenses.length >= 2) {
+      const nonzero = monthlyExpenses.filter((e) => e > 0)
+      if (nonzero.length >= 2) {
+        const mean =
+          monthlyExpenses.reduce((s, e) => s + e, 0) / monthlyExpenses.length
+        if (mean > 0) {
+          const variance =
+            monthlyExpenses.reduce((s, e) => s + (e - mean) ** 2, 0) /
+            monthlyExpenses.length
+          const cv = Math.sqrt(variance) / mean
+          spendingPattern = cv > 0.35 ? 'uneven' : 'even'
+        }
+      }
+    }
+
+    let positiveMonthsStreak = 0
+    for (let i = monthsSorted.length - 1; i >= 0; i--) {
+      const { income, expense } = monthTotals(monthsSorted[i])
+      if (income - expense > 0) positiveMonthsStreak += 1
+      else break
+    }
+
     const cur = monthTotals(lastM)
     const prev = monthTotals(prevM)
     const netThis = cur.income - cur.expense
@@ -143,9 +178,36 @@ export function useInsights() {
         ? ((netThis - netLast) / Math.abs(netLast)) * 100
         : null
 
+    const expenseDelta =
+      prevM != null ? cur.expense - prev.expense : null
+
+    const savingsRatePct =
+      cur.income > 0 ? (netThis / cur.income) * 100 : null
+
+    const monthlyExpenseBars = monthsSorted.map((mk) => {
+      const [y, mo] = mk.split('-').map(Number)
+      const shortLabel = new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+      }).format(new Date(y, mo - 1, 1))
+      return {
+        key: mk,
+        shortLabel,
+        expense: monthTotals(mk).expense,
+        isCurrent: mk === lastM,
+      }
+    })
+
+    let savingsStatus = 'Building'
+    if (netThis < 0) savingsStatus = 'Strained'
+    else if (savingsRatePct != null && savingsRatePct >= 50) savingsStatus = 'Strong'
+    else if (savingsRatePct != null && savingsRatePct >= 25) savingsStatus = 'Solid'
+    else if (savingsRatePct != null && savingsRatePct >= 0) savingsStatus = 'Steady'
+
     return {
       topCategory: topCat,
       topCategoryAmount: topAmt,
+      topCategoryPctOfMonth: topPctOfMonth,
+      otherCategoriesSpend,
       latestMonthKey: lastM,
       previousMonthKey: prevM,
       incomeThis: cur.income,
@@ -154,7 +216,14 @@ export function useInsights() {
       incomeLast: prev.income,
       expenseLast: prev.expense,
       netLast,
+      expenseDelta,
       monthDeltaPct: monthDelta,
+      savingsRatePct,
+      spendingPattern,
+      positiveMonthsStreak,
+      monthsCount: monthsSorted.length,
+      monthlyExpenseBars,
+      savingsStatus,
     }
   }, [transactions])
 }

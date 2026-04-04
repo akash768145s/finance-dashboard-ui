@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Bar,
   BarChart,
@@ -7,8 +7,8 @@ import {
   Tooltip,
   XAxis,
 } from 'recharts'
-import { formatCurrency } from '../utils/format'
-import { useBalanceTrendPoints } from '../hooks/useFinanceMetrics'
+import { formatCurrency } from '../../utils/format'
+import { useBalanceTrendPoints } from '../../hooks/useFinanceMetrics'
 
 function TooltipContent({ active, payload }) {
   if (!active || !payload?.length) return null
@@ -31,10 +31,25 @@ function TooltipContent({ active, payload }) {
   )
 }
 
+function useNarrowViewport(breakpointPx = 640) {
+  const [narrow, setNarrow] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${breakpointPx}px)`)
+    const sync = () => setNarrow(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [breakpointPx])
+  return narrow
+}
+
 export function BalanceTrend() {
   const points = useBalanceTrendPoints()
+  const narrow = useNarrowViewport(640)
+
   const data = useMemo(() => {
-    const trimmed = points.slice(-12)
+    const take = narrow ? 6 : 12
+    const trimmed = points.slice(-take)
     return trimmed.map((point, index) => {
       const month = new Date(`${point.date}T00:00:00`).toLocaleDateString('en-US', {
         month: 'short',
@@ -42,15 +57,16 @@ export function BalanceTrend() {
       const max = Math.max(...trimmed.map((p) => p.balance), 1)
       const baseline = Math.max(point.balance * 1.12, max * 0.35)
       const labelIndex = String(index + 1).padStart(2, '0')
+      const label = `${month.toUpperCase()} ${labelIndex}`
 
       return {
         month: month.toUpperCase(),
         baseline,
         value: point.balance,
-        label: `${month.toUpperCase()} ${labelIndex}`,
+        label,
       }
     })
-  }, [points])
+  }, [points, narrow])
 
   const latestPoint = data[data.length - 1]
   const previousPoint = data[data.length - 2]
@@ -108,9 +124,20 @@ export function BalanceTrend() {
         </span>
       </div>
 
-      <div className="dash-chart-wrap dash-chart-wrap--bars dash-chart-wrap--bars-revamp">
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} margin={{ top: 12, right: 10, left: 2, bottom: 10 }} barGap={6}>
+      <div
+        className={`dash-chart-wrap dash-chart-wrap--bars dash-chart-wrap--bars-revamp${narrow ? ' dash-balance-chart--narrow' : ''}`}
+      >
+        <ResponsiveContainer width="100%" height={narrow ? 304 : 300}>
+          <BarChart
+            data={data}
+            margin={
+              narrow
+                ? { top: 10, right: 6, left: 4, bottom: 40 }
+                : { top: 12, right: 10, left: 2, bottom: 10 }
+            }
+            barGap={narrow ? 7 : 6}
+            barCategoryGap={narrow ? '12%' : '18%'}
+          >
             <defs>
               <linearGradient id="dashProjectedBar" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#e8edf6" />
@@ -125,23 +152,31 @@ export function BalanceTrend() {
             <XAxis
               dataKey="label"
               stroke="transparent"
-              tick={{ fill: 'var(--muted)', fontSize: 12, fontWeight: 700 }}
+              tick={{
+                fill: 'var(--muted)',
+                fontSize: narrow ? 10 : 12,
+                fontWeight: 700,
+                ...(narrow
+                  ? { angle: -28, textAnchor: 'end' }
+                  : {}),
+              }}
               tickLine={false}
               axisLine={false}
-              interval="preserveStartEnd"
+              interval={narrow ? 0 : 'preserveStartEnd'}
+              dy={narrow ? 6 : 8}
             />
             <Tooltip content={<TooltipContent />} />
             <Bar
               dataKey="baseline"
               fill="url(#dashProjectedBar)"
-              radius={[9, 9, 0, 0]}
-              maxBarSize={24}
+              radius={narrow ? [10, 10, 0, 0] : [9, 9, 0, 0]}
+              maxBarSize={narrow ? 28 : 24}
             />
             <Bar
               dataKey="value"
               fill="url(#dashActualBar)"
-              radius={[9, 9, 0, 0]}
-              maxBarSize={24}
+              radius={narrow ? [10, 10, 0, 0] : [9, 9, 0, 0]}
+              maxBarSize={narrow ? 28 : 24}
             />
           </BarChart>
         </ResponsiveContainer>

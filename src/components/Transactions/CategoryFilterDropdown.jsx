@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { ChevronDown, LayoutGrid } from 'lucide-react'
-import { CATEGORIES } from '../data/mockData'
-import { CategoryIcon } from './CategoryIcon'
+import { FINANCE_DEMO_SEED } from '../../data/mockData'
+import { CategoryIcon } from '../Dashboard/CategoryIcon'
 
 /**
  * @param {{
@@ -11,7 +11,7 @@ import { CategoryIcon } from './CategoryIcon'
  */
 export function CategoryFilterDropdown({ value, onChange }) {
   const [open, setOpen] = useState(false)
-  const rootRef = useRef(/** @type {HTMLDivElement | null} */ (null))
+  const rootRef = useRef(/** @type {HTMLDivElement | null} */(null))
   const labelId = useId()
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export function CategoryFilterDropdown({ value, onChange }) {
                 <span>All</span>
               </button>
             </li>
-            {CATEGORIES.map((c) => (
+            {FINANCE_DEMO_SEED.categories.map((c) => (
               <li key={c} role="none">
                 <button
                   type="button"

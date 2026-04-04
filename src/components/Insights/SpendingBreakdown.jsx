@@ -6,8 +6,8 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
-import { formatCurrency } from '../utils/format'
-import { useSpendingByCategory } from '../hooks/useFinanceMetrics'
+import { formatCurrency } from '../../utils/format'
+import { useSpendingByCategory } from '../../hooks/useFinanceMetrics'
 
 const PIE_COLORS = [
   '#0b3c92',
@@ -59,7 +59,7 @@ export function SpendingBreakdown() {
   return (
     <section className="dash-panel dash-panel--donut" aria-labelledby="spend-heading">
       <h2 id="spend-heading" className="dash-panel__title">Spending by Category</h2>
-      <p className="dash-panel__desc">Monthly breakdown</p>
+      <p className="dash-panel__desc">All-time by category</p>
       <div className="dash-chart-wrap dash-chart-wrap--pie-modern">
         <div className="dash-donut__center">
           <span className="dash-donut__value">{formatCompactCurrency(total)}</span>

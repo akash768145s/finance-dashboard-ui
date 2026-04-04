@@ -1,12 +1,12 @@
 import { useEffect, useId, useState } from 'react'
-import { CATEGORIES } from '../data/mockData'
-import { useFinanceStore } from '../store/useFinanceStore'
+import { FINANCE_DEMO_SEED } from '../../data/mockData'
+import { useFinanceStore } from '../../store/useFinanceStore'
 
 /**
  * @param {object} props
  * @param {boolean} props.open
  * @param {() => void} props.onClose
- * @param {import('../data/mockData').Transaction | null} props.editing
+ * @param {import('../../data/mockData').Transaction | null} props.editing
  */
 export function TransactionModal({ open, onClose, editing }) {
   if (!open) return null
@@ -22,7 +22,7 @@ export function TransactionModal({ open, onClose, editing }) {
 
 /**
  * @param {object} props
- * @param {import('../data/mockData').Transaction | null} props.editing
+ * @param {import('../../data/mockData').Transaction | null} props.editing
  * @param {() => void} props.onClose
  */
 function TransactionModalInner({ editing, onClose }) {
@@ -144,7 +144,7 @@ function TransactionModalInner({ editing, onClose }) {
                 setForm((f) => ({ ...f, category: e.target.value }))
               }
             >
-              {CATEGORIES.map((c) => (
+              {FINANCE_DEMO_SEED.categories.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>

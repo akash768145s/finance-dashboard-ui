@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useFinanceStore } from '../store/useFinanceStore'
+import { useFinanceStore } from '../../store/useFinanceStore'
 import { RefreshCcw } from 'lucide-react'
 import { ConfirmDialog } from './ConfirmDialog'
 

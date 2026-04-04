@@ -12,15 +12,15 @@ import {
   X,
   WalletCards,
 } from 'lucide-react'
-import { Header } from './components/Header'
-import { ThemeSync } from './components/ThemeSync'
-import { SummaryCards } from './components/SummaryCards'
-import { BalanceTrend } from './components/BalanceTrend'
-import { SpendingBreakdown } from './components/SpendingBreakdown'
-import { Insights } from './components/Insights'
-import { TransactionsPanel } from './components/TransactionsPanel'
-import { RecentTransactions } from './components/RecentTransactions'
-import { Footer } from './components/Footer'
+import { Header } from './components/Base/Header'
+import { ThemeSync } from './components/Base/ThemeSync'
+import { SummaryCards } from './components/Dashboard/SummaryCards'
+import { BalanceTrend } from './components/Dashboard/BalanceTrend'
+import { SpendingBreakdown } from './components/Insights/SpendingBreakdown'
+import { Insights } from './components/Insights/Insights'
+import { TransactionsPanel } from './components/Transactions/TransactionsPanel'
+import { RecentTransactions } from './components/Dashboard/RecentTransactions'
+import { Footer } from './components/Base/Footer'
 
 function SideNav({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
   const navItems = [

@@ -1,5 +1,5 @@
-import { formatCurrency } from '../utils/format'
-import { useInsights, useSummary } from '../hooks/useFinanceMetrics'
+import { formatCurrency } from '../../utils/format'
+import { useInsights, useSummary } from '../../hooks/useFinanceMetrics'
 import {
   ArrowDown,
   ArrowUp,
@@ -10,13 +10,21 @@ import {
 
 export function SummaryCards() {
   const { balance, income, expenses } = useSummary()
-  const { incomeLast, expenseLast, monthDeltaPct } = useInsights()
+  const {
+    incomeThis,
+    expenseThis,
+    incomeLast,
+    expenseLast,
+    netThis,
+    monthDeltaPct,
+  } = useInsights()
   const netCash = income - expenses
-  const growthPct = income > 0 ? ((income - expenses) / income) * 100 : 0
+  const savingsRateThisMonth =
+    incomeThis > 0 ? (netThis / incomeThis) * 100 : null
   const incomePct =
-    incomeLast > 0 ? ((income - incomeLast) / incomeLast) * 100 : null
+    incomeLast > 0 ? ((incomeThis - incomeLast) / incomeLast) * 100 : null
   const expensePct =
-    expenseLast > 0 ? ((expenses - expenseLast) / expenseLast) * 100 : null
+    expenseLast > 0 ? ((expenseThis - expenseLast) / expenseLast) * 100 : null
 
   const buildTrend = (pct, kind) => {
     if (pct === null) {
@@ -57,7 +65,9 @@ export function SummaryCards() {
           <p className="dash-overview-card__value">{formatCurrency(balance)}</p>
           <span className="dash-overview-card__pill">
             <TrendingUp size={13} />
-            {`${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}% from last month`}
+            {savingsRateThisMonth != null
+              ? `${savingsRateThisMonth >= 0 ? '+' : ''}${savingsRateThisMonth.toFixed(1)}% of income (this month)`
+              : 'Add this month’s data for savings rate'}
           </span>
         </article>
         <article className="dash-overview-card dash-overview-card--metric">

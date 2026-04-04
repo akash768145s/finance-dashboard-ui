@@ -1,48 +1,920 @@
-/* —— Insights route —— */
-.dash-insights {
+/* Insights — premium fintech: cash-flow vs data viz, glass + tight rhythm */
+.insh {
+  --insh-font: var(--font-body);
+  --insh-muted: var(--muted);
+  --insh-ink: var(--text-heading);
+  --insh-surface: color-mix(in oklab, var(--surface-2) 82%, var(--surface) 18%);
+  --insh-elevated: color-mix(in oklab, var(--surface-3) 52%, var(--surface-2) 48%);
+  --insh-well: color-mix(in oklab, var(--surface-3) 65%, var(--surface-2) 35%);
+  --insh-border: color-mix(in oklab, var(--border) 72%, transparent 28%);
+  --insh-border-soft: color-mix(in oklab, var(--border) 38%, transparent 62%);
+  --insh-chart-a: #d4c8fe;
+  --insh-chart-b: #6d28d9;
+  --insh-violet-glow: color-mix(in oklab, #a78bfa 22%, transparent);
+  --insh-specular: color-mix(in oklab, var(--text-heading) 7%, transparent);
+  --insh-shadow:
+    0 0 0 1px color-mix(in oklab, var(--text-heading) 4%, transparent) inset,
+    0 1px 0 var(--insh-specular) inset,
+    0 28px 64px rgba(0, 0, 0, 0.38);
+  --insh-shadow-hover:
+    0 0 0 1px color-mix(in oklab, var(--accent) 18%, transparent) inset,
+    0 1px 0 color-mix(in oklab, var(--text-heading) 9%, transparent) inset,
+    0 36px 80px rgba(0, 0, 0, 0.48);
+  --insh-radius: 20px;
+  --insh-radius-sm: 14px;
+  --insh-radius-xs: 10px;
+  --insh-space-1: 6px;
+  --insh-space-2: 14px;
+  --insh-space-3: 18px;
+  --insh-space-4: 28px;
+  /* One value for row + column = even gutters (no row/column mismatch) */
+  --insh-grid-gap: 12px;
+
+  width: 100%;
+  max-width: min(100%, 72rem);
+  min-width: 0;
+  margin: 0 auto;
+  padding: 0 0 var(--insh-space-4);
+  font-family: var(--insh-font);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.012em;
+}
+
+[data-theme='dark'] .insh {
+  --insh-shadow:
+    0 0 0 1px color-mix(in oklab, #fff 5%, transparent) inset,
+    0 1px 0 color-mix(in oklab, #fff 8%, transparent) inset,
+    0 32px 72px rgba(0, 0, 0, 0.55);
+  --insh-shadow-hover:
+    0 0 0 1px color-mix(in oklab, var(--accent) 22%, transparent) inset,
+    0 1px 0 color-mix(in oklab, #fff 10%, transparent) inset,
+    0 40px 88px rgba(0, 0, 0, 0.62);
+}
+
+[data-theme='light'] .insh {
+  --insh-chart-a: #a5b4fc;
+  --insh-chart-b: #4f46e5;
+  --insh-surface: #ffffff;
+  --insh-elevated: color-mix(in oklab, #f8fafc 70%, var(--surface-3) 30%);
+  --insh-border: color-mix(in oklab, var(--border) 92%, var(--text-heading) 5%);
+  --insh-border-soft: color-mix(in oklab, var(--border) 75%, transparent 25%);
+  --insh-violet-glow: color-mix(in oklab, #6366f1 14%, transparent);
+  --insh-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 10px 32px rgba(15, 23, 42, 0.06);
+  --insh-shadow-hover:
+    0 1px 0 rgba(255, 255, 255, 0.98) inset,
+    0 2px 4px rgba(15, 23, 42, 0.05),
+    0 16px 44px rgba(15, 23, 42, 0.09);
+}
+
+[data-theme='light'] .insh-panel {
+  background: linear-gradient(
+    168deg,
+    #ffffff 0%,
+    color-mix(in oklab, var(--surface-3) 88%, #ffffff 12%) 52%,
+    color-mix(in oklab, var(--surface-3) 95%, #e2e8f0 5%) 100%
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+[data-theme='light'] .insh-panel::before {
+  opacity: 0.38;
+}
+
+[data-theme='light'] .insh-panel--hero::before {
+  opacity: 0.42;
+}
+
+[data-theme='light'] .insh-panel__insight {
+  background: color-mix(in oklab, #ffffff 78%, var(--surface-3) 22%);
+  border-color: var(--insh-border-soft);
+  border-left-color: color-mix(in oklab, var(--accent) 55%, #6366f1 15%);
+  color: var(--text);
+}
+
+[data-theme='light'] .insh-panel__insight--data {
+  border-left-color: color-mix(in oklab, var(--insh-chart-b) 50%, #6366f1 20%);
+}
+
+[data-theme='light'] .insh-panel__insight--flow {
+  border-left-color: color-mix(in oklab, var(--income) 58%, #047857 18%);
+}
+
+[data-theme='light'] .insh-donut__center {
+  background: #ffffff;
+  border-color: var(--insh-border-soft);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset;
+}
+
+[data-theme='light'] .insh-spend__dot--lead {
+  background: linear-gradient(145deg, var(--insh-chart-a), var(--insh-chart-b));
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--insh-chart-b) 18%, transparent),
+    0 4px 14px color-mix(in oklab, var(--insh-chart-b) 22%, transparent);
+}
+
+[data-theme='light'] .insh-stat,
+[data-theme='light'] .insh-fig-rows {
+  background: color-mix(in oklab, #ffffff 82%, var(--surface-3) 18%);
+}
+
+[data-theme='light'] .insh-fig-rows__row--emph {
+  background: color-mix(in oklab, var(--surface-3) 55%, var(--accent) 6%);
+}
+
+[data-theme='light'] .insh-fig-rows__row--tone-pos {
+  background: color-mix(in oklab, #ecfdf5 88%, var(--income) 12%);
+}
+
+[data-theme='light'] .insh-fig-rows__row--tone-neg {
+  background: color-mix(in oklab, #fff1f2 90%, var(--expense) 10%);
+}
+
+[data-theme='light'] .insh-chart--well {
+  background: color-mix(in oklab, var(--surface-3) 55%, #ffffff 45%);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.9) inset,
+    0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.insh .tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Masthead */
+.insh__masthead {
+  margin-bottom: var(--insh-space-4);
+  padding-bottom: var(--insh-space-3);
+  border-bottom: 1px solid var(--insh-border-soft);
+  position: relative;
+}
+
+.insh__masthead::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 4.5rem;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--income), var(--insh-chart-b));
+  opacity: 0.85;
+}
+
+.insh__eyebrow {
+  margin: 0 0 10px;
+  display: block;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--insh-muted) 88%, var(--accent) 12%);
+}
+
+.insh__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 3vw, 2.125rem);
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  color: var(--insh-ink);
+}
+
+[data-theme='dark'] .insh__title {
+  text-shadow: 0 1px 36px color-mix(in oklab, var(--accent) 16%, transparent);
+}
+
+/* Grid — uniform gutters; start-aligned so row height follows content */
+.insh__grid {
+  display: grid;
+  gap: var(--insh-grid-gap);
+  grid-template-columns: 1fr;
+  align-items: start;
+}
+
+@media (min-width: 640px) {
+  .insh__grid {
+    --insh-grid-gap: 14px;
+  }
+}
+
+@media (min-width: 900px) {
+  .insh__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--insh-grid-gap);
+  }
+}
+
+@media (min-width: 1200px) {
+  .insh__grid {
+    --insh-grid-gap: 16px;
+  }
+}
+
+.insh__grid>.insh-panel {
+  min-width: 0;
+  min-height: 0;
+  height: auto;
+}
+
+/* Reveal */
+.insh-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--insh-reveal-delay, 0ms);
+}
+
+.insh-reveal--on {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insh-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Panel shell — layered glass */
+.insh-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 1.15rem 1.25rem 1.2rem;
+  border-radius: var(--insh-radius);
+  background:
+    linear-gradient(
+      168deg,
+      color-mix(in oklab, var(--surface-2) 94%, #fff 6%) 0%,
+      color-mix(in oklab, var(--surface-2) 88%, transparent) 48%,
+      color-mix(in oklab, var(--surface-3) 55%, var(--surface-2) 45%) 100%
+    );
+  backdrop-filter: blur(28px) saturate(1.15);
+  -webkit-backdrop-filter: blur(28px) saturate(1.15);
+  border: 1px solid var(--insh-border);
+  box-shadow: var(--insh-shadow);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.45s ease,
+    border-color 0.4s ease;
+}
+
+.insh-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.42;
+  z-index: 0;
+  background: radial-gradient(120% 85% at 12% -18%,
+      var(--insh-violet-glow),
+      transparent 52%);
+}
+
+.insh-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+  background: linear-gradient(
+    165deg,
+    color-mix(in oklab, var(--text-heading) 10%, transparent) 0%,
+    transparent 42%
+  );
+}
+
+.insh-panel--hero::before {
+  background: radial-gradient(130% 90% at 12% -30%,
+      color-mix(in oklab, var(--income) 24%, transparent),
+      transparent 58%);
+}
+
+.insh-panel--spend::before {
+  background: radial-gradient(100% 70% at 92% -15%,
+      color-mix(in oklab, var(--insh-chart-b) 22%, transparent),
+      transparent 50%);
+}
+
+.insh-panel--chart::before {
+  background: radial-gradient(90% 60% at 50% -25%,
+      color-mix(in oklab, var(--accent) 16%, transparent),
+      transparent 48%);
+}
+
+.insh-panel--health::before {
+  background: radial-gradient(100% 80% at 8% 110%,
+      color-mix(in oklab, var(--accent) 12%, transparent),
+      transparent 52%);
+}
+
+.insh-panel>* {
+  position: relative;
+  z-index: 1;
+}
+
+[data-theme='light'] .insh-panel::after {
+  opacity: 0.35;
+  background: linear-gradient(
+    165deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    transparent 45%
+  );
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .insh-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--insh-shadow-hover);
+    border-color: color-mix(in oklab, var(--border) 55%, var(--accent) 18%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insh-panel {
+    transition: none;
+  }
+
+  .insh-panel:hover {
+    transform: none;
+  }
+}
+
+.insh-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: var(--insh-space-2);
+}
+
+.insh-panel__glyph {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 28%, var(--insh-border-soft));
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in oklab, var(--accent) 16%, var(--insh-elevated)),
+      color-mix(in oklab, var(--accent) 6%, var(--insh-elevated))
+    );
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--text-heading) 5%, transparent) inset,
+    0 4px 16px color-mix(in oklab, var(--accent) 12%, transparent);
+}
+
+.insh-panel__label {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.59375rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--insh-muted) 92%, var(--insh-ink) 8%);
+  line-height: 1.3;
+}
+
+.insh-panel__insight {
+  margin-top: var(--insh-space-2);
+  margin-bottom: 0;
+  padding: 10px 12px 11px 14px;
+  border-radius: var(--insh-radius-xs);
+  border: 1px solid var(--insh-border-soft);
+  border-left-width: 3px;
+  border-left-style: solid;
+  border-left-color: color-mix(in oklab, var(--accent) 50%, transparent);
+  background: color-mix(in oklab, var(--insh-well) 72%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--text) 94%, var(--insh-muted) 6%);
+}
+
+.insh-panel__insight--data {
+  border-left-color: color-mix(in oklab, var(--insh-chart-b) 55%, var(--accent) 25%);
+}
+
+.insh-panel__insight--flow {
+  border-left-color: color-mix(in oklab, var(--income) 52%, transparent);
+}
+
+.insh-panel__empty {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--insh-muted);
+}
+
+/* Delta arrows (Lucide) next to currency */
+.insh-delta-icon {
+  flex-shrink: 0;
+}
+
+.insh-stat__v--delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+}
+
+.insh-fig-rows__dd--delta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.35em;
+  flex-wrap: wrap;
+}
+
+/* Hero — two-column balance: net figure + stat tiles */
+.insh-hero__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--insh-space-2);
+}
+
+@media (min-width: 560px) {
+  .insh-panel--hero .insh-hero__body {
+    flex-direction: row;
+    align-items: stretch;
+    gap: var(--insh-space-3);
+  }
+
+  .insh-hero__primary {
+    flex: 1.15;
+    min-width: 0;
+    justify-content: center;
+  }
+
+  .insh-hero__stats {
+    flex: 1;
+    min-width: 0;
+    max-width: 17rem;
+  }
+}
+
+.insh-hero__primary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.insh-hero__hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  color: var(--insh-muted);
+  max-width: 22ch;
+}
+
+.insh-hero__figure {
+  margin: 0;
+  font-size: clamp(1.8rem, 3.6vw, 2.35rem);
+  font-weight: 650;
+  letter-spacing: -0.052em;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.06em;
+}
+
+.insh-hero__figure--pos {
+  color: var(--income);
+}
+
+[data-theme='dark'] .insh-hero__figure--pos {
+  filter: drop-shadow(0 0 28px color-mix(in oklab, var(--income) 28%, transparent));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='dark'] .insh-hero__figure--pos {
+    filter: none;
+  }
+}
+
+.insh-hero__figure--neg {
+  color: var(--expense);
+}
+
+.insh-hero__sign {
+  font-size: 0.5em;
+  font-weight: 600;
+  opacity: 0.9;
+  transform: translateY(-0.05em);
+}
+
+.insh-hero__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--insh-space-2);
+  align-content: stretch;
+}
+
+@media (max-width: 380px) {
+  .insh-hero__stats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.insh-stat {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 4.85rem;
+  padding: 12px 14px;
+  border-radius: var(--insh-radius-sm);
+  background: color-mix(in oklab, var(--insh-elevated) 92%, transparent);
+  border: 1px solid var(--insh-border-soft);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--text-heading) 4%, transparent) inset;
+}
+
+.insh-stat--callout {
+  border-color: color-mix(in oklab, var(--expense) 42%, var(--insh-border-soft));
+  background: color-mix(in oklab, var(--expense) 7%, var(--insh-elevated));
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--expense) 12%, transparent) inset,
+    0 6px 20px color-mix(in oklab, var(--expense) 8%, transparent);
+}
+
+.insh-stat--ghost {
+  opacity: 0.75;
+}
+
+.insh-stat__k {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--insh-muted);
+  margin-bottom: 8px;
+}
+
+.insh-stat__v {
+  margin-top: auto;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--insh-ink);
+}
+
+.insh-stat__v--muted {
+  color: var(--insh-muted);
+}
+
+.insh-stat__v--good {
+  color: var(--income);
+}
+
+.insh-stat__v--warn {
+  color: var(--expense);
+}
+
+/* Spending — donut + list, dense */
+.insh-spend {
+  display: grid;
+  gap: var(--insh-space-2);
+  align-items: center;
+}
+
+@media (min-width: 520px) {
+  .insh-spend {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+    gap: var(--insh-space-2);
+  }
+}
+
+.insh-spend__visual {
+  display: flex;
+  justify-content: center;
+}
+
+/* Donut — SVG arc uses same gradient language as bar chart */
+.insh-donut {
+  position: relative;
+  width: min(158px, 42vw);
+  aspect-ratio: 1;
+}
+
+.insh-donut__svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 10px 28px rgba(2, 6, 23, 0.14));
+}
+
+[data-theme='dark'] .insh-donut__svg {
+  filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.45));
+}
+
+.insh-donut__track {
+  stroke: color-mix(in oklab, var(--border) 62%, var(--surface-3) 38%);
+}
+
+.insh-donut__arc {
+  transition: stroke-dasharray 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insh-donut__arc {
+    transition: none;
+  }
+}
+
+.insh-donut__center {
+  position: absolute;
+  inset: 18%;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: color-mix(in oklab, var(--surface-2) 94%, transparent);
+  border: 1px solid var(--insh-border-soft);
+  pointer-events: none;
+}
+
+.insh-donut__pct {
+  font-size: 1.625rem;
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--insh-ink);
+}
+
+.insh-donut__pct-sub {
+  margin-top: 4px;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--insh-muted);
+}
+
+.insh-spend__list {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 10px;
 }
 
-.dash-insight {
-  background: linear-gradient(160deg,
-      color-mix(in oklab, var(--surface-2) 92%, white 8%),
-      var(--surface-2));
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1rem 1.1rem;
+.insh-spend__item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.insh-spend__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.insh-spend__dot--lead {
+  background: linear-gradient(145deg, var(--insh-chart-a), var(--insh-chart-b));
+  box-shadow:
+    0 0 0 2px color-mix(in oklab, var(--insh-chart-b) 20%, transparent),
+    0 4px 16px color-mix(in oklab, var(--insh-chart-b) 28%, transparent);
+}
+
+.insh-spend__dot--rest {
+  background: var(--insh-muted);
+  opacity: 0.55;
+}
+
+.insh-spend__name {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--insh-muted);
+}
+
+.insh-spend__item--lead .insh-spend__name {
+  color: var(--insh-ink);
+}
+
+.insh-spend__val {
+  display: block;
+  margin-top: 4px;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--insh-ink);
+}
+
+.insh-spend__pct-tag {
+  font-weight: 500;
+  color: var(--insh-muted);
+  font-size: 0.9375rem;
+}
+
+/* Bar chart */
+.insh-chart {
+  height: 196px;
+  margin: 0;
+}
+
+.insh-chart--well {
+  padding: 10px 8px 6px;
+  border-radius: var(--insh-radius-sm);
+  background: color-mix(in oklab, var(--insh-well) 85%, transparent);
+  border: 1px solid color-mix(in oklab, var(--insh-border-soft) 90%, var(--accent) 10%);
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--text-heading) 5%, transparent) inset,
+    0 12px 36px color-mix(in oklab, var(--insh-chart-b) 6%, transparent);
+}
+
+/* Shared key-value block — spending compare + financial health */
+.insh-fig-rows {
+  margin: var(--insh-space-2) 0 0;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0;
+  border-radius: var(--insh-radius-sm);
+  border: 1px solid var(--insh-border-soft);
+  overflow: hidden;
+  background: color-mix(in oklab, var(--insh-elevated) 94%, transparent);
+  box-shadow: 0 1px 0 color-mix(in oklab, var(--text-heading) 3%, transparent) inset;
 }
 
-.dash-insight__label {
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  font-weight: 600;
-  display: inline-flex;
+.insh-panel--chart .insh-fig-rows {
+  margin-top: var(--insh-space-2);
+}
+
+.insh-panel--health .insh-fig-rows {
+  margin-top: 0;
+}
+
+.insh-fig-rows__row {
+  display: flex;
   align-items: center;
-  gap: 0.3rem;
-  line-height: var(--leading-snug);
+  justify-content: space-between;
+  gap: var(--insh-space-2);
+  min-height: 48px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--insh-border-soft);
 }
 
-.dash-insight__value {
-  font-size: var(--text-md);
-  color: var(--text-heading);
+.insh-fig-rows__row:last-child {
+  border-bottom: none;
+}
+
+.insh-fig-rows__row--emph {
+  background: color-mix(in oklab, var(--surface-3) 40%, transparent);
+}
+
+.insh-fig-rows__row dt {
+  margin: 0;
+  font-size: 0.625rem;
   font-weight: 600;
-  line-height: var(--leading-snug);
-  letter-spacing: -0.01em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--insh-muted);
+  line-height: 1.25;
 }
 
-.dash-insight__meta {
-  font-size: var(--text-sm);
-  color: var(--text);
+.insh-fig-rows__row dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: var(--insh-ink);
+  text-align: right;
+}
+
+.insh-fig-rows__rate {
+  font-size: 1.0625rem;
+  font-weight: 650;
+}
+
+.insh-fig-rows__dd--down {
+  color: var(--income);
+}
+
+.insh-fig-rows__dd--up {
+  color: var(--expense);
+}
+
+.insh-fig-rows__row--tone-pos {
+  background: color-mix(in oklab, var(--income) 6%, var(--insh-elevated));
+  box-shadow: inset 3px 0 0 color-mix(in oklab, var(--income) 62%, transparent);
+  padding-left: 15px;
+}
+
+.insh-fig-rows__row--tone-neg {
+  background: color-mix(in oklab, var(--expense) 6%, var(--insh-elevated));
+  box-shadow: inset 3px 0 0 color-mix(in oklab, var(--expense) 52%, transparent);
+  padding-left: 15px;
+}
+
+.insh-fig-rows__row--tone-neutral {
+  box-shadow: inset 3px 0 0 color-mix(in oklab, var(--accent) 42%, transparent);
+  padding-left: 15px;
+}
+
+.insh-fig-rows__status {
+  font-weight: 650;
+}
+
+.insh-fig-rows__status--pos {
+  color: var(--income);
+}
+
+.insh-fig-rows__status--neg {
+  color: var(--expense);
+}
+
+.insh-fig-rows__status--neutral {
+  color: var(--insh-ink);
+}
+
+.insh-panel--health {
+  min-height: 0;
+}
+
+/* Bar chart hover tooltip */
+.insh-chart-tooltip {
+  padding: 11px 14px;
+  min-width: 9.5rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in oklab, var(--border) 55%, transparent);
+  background: color-mix(in oklab, var(--surface-2) 88%, transparent);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--text-heading) 5%, transparent) inset,
+    0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='light'] .insh-chart-tooltip {
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 1) inset,
+    0 12px 32px rgba(15, 23, 42, 0.1);
+}
+
+.insh-chart-tooltip__month {
+  margin: 0 0 8px;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--insh-muted);
+}
+
+.insh-chart-tooltip__dl {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.insh-chart-tooltip__pair {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.insh-chart-tooltip__pair dt {
+  margin: 0;
+  font-size: 0.6875rem;
   font-weight: 500;
-  line-height: var(--leading-normal);
+  color: var(--insh-muted);
+}
+
+.insh-chart-tooltip__pair dd {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--insh-ink);
 }

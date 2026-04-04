@@ -1,6 +1,6 @@
-import { useFinanceStore } from '../store/useFinanceStore'
+import { useFinanceStore } from '../../store/useFinanceStore'
 import { Moon, ShieldCheck, Sun } from 'lucide-react'
-import brandMark from '../assets/logo.png'
+import brandMark from '../../assets/logo.png'
 
 export function Header() {
   const role = useFinanceStore((s) => s.role)
@@ -32,8 +32,8 @@ export function Header() {
               }
               aria-label="Switch role for demo"
             >
-              <option value="viewer">Viewer (read-only)</option>
-              <option value="admin">Admin (edit)</option>
+              <option value="viewer">Viewer</option>
+              <option value="admin">Admin</option>
             </select>
           </label>
         </div>

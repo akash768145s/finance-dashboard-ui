@@ -1,10 +1,10 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import { useFinanceStore } from '../store/useFinanceStore'
-import { useFilteredTransactions } from '../hooks/useFinanceMetrics'
-import { formatCurrency, formatDate, transactionDescription } from '../utils/format'
+import { useFinanceStore } from '../../store/useFinanceStore'
+import { useFilteredTransactions } from '../../hooks/useFinanceMetrics'
+import { formatCurrency, formatDate, transactionDescription } from '../../utils/format'
 import { TransactionModal } from './TransactionModal'
-import { ConfirmDialog } from './ConfirmDialog'
-import { CategoryIcon } from './CategoryIcon'
+import { ConfirmDialog } from '../Base/ConfirmDialog'
+import { CategoryIcon } from '../Dashboard/CategoryIcon'
 import { CategoryFilterDropdown } from './CategoryFilterDropdown'
 import {
   ArrowUpDown,
@@ -74,10 +74,10 @@ export function TransactionsPanel() {
   const filtered = useFilteredTransactions()
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState(
-    /** @type {null | import('../data/mockData').Transaction} */(null),
+    /** @type {null | import('../../data/mockData').Transaction} */(null),
   )
   const [deleteTarget, setDeleteTarget] = useState(
-    /** @type {null | import('../data/mockData').Transaction} */(null),
+    /** @type {null | import('../../data/mockData').Transaction} */(null),
   )
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
@@ -306,58 +306,78 @@ export function TransactionsPanel() {
                 <tbody>
                   {paginatedRows.map((t) => (
                     <tr key={t.id}>
-                      <td>{formatDate(t.date)}</td>
-                      <td className="dash-table__note">
-                        {transactionDescription(t)}
-                      </td>
-                      <td>
-                        <span className="dash-table__category">
-                          <CategoryIcon category={t.category} size={16} />
-                          {t.category}
-                        </span>
-                      </td>
-                      <td>
-                        <span
-                          className={
-                            t.type === 'income'
-                              ? 'dash-badge dash-badge--income'
-                              : 'dash-badge dash-badge--expense'
-                          }
-                        >
-                          {t.type}
+                      <td data-label="Date" className="dash-tx-mob__date">
+                        <span className="dash-table__cell-body">
+                          {formatDate(t.date)}
                         </span>
                       </td>
                       <td
-                        className={
-                          t.type === 'income'
-                            ? 'dash-num dash-num--income'
-                            : 'dash-num dash-num--expense'
-                        }
+                        className="dash-table__note dash-tx-mob__note"
+                        data-label="Description"
                       >
-                        {t.type === 'income' ? '+' : '−'}
-                        {formatCurrency(t.amount)}
+                        <span className="dash-table__cell-body">
+                          {transactionDescription(t)}
+                        </span>
+                      </td>
+                      <td data-label="Category" className="dash-tx-mob__cat">
+                        <span className="dash-table__cell-body">
+                          <span className="dash-table__category">
+                            <CategoryIcon category={t.category} size={16} />
+                            {t.category}
+                          </span>
+                        </span>
+                      </td>
+                      <td data-label="Type" className="dash-tx-mob__type">
+                        <span className="dash-table__cell-body">
+                          <span
+                            className={
+                              t.type === 'income'
+                                ? 'dash-badge dash-badge--income'
+                                : 'dash-badge dash-badge--expense'
+                            }
+                          >
+                            {t.type}
+                          </span>
+                        </span>
+                      </td>
+                      <td
+                        data-label="Amount"
+                        className={`dash-tx-mob__amt ${t.type === 'income'
+                          ? 'dash-num dash-num--income'
+                          : 'dash-num dash-num--expense'
+                          }`}
+                      >
+                        <span className="dash-table__cell-body">
+                          {t.type === 'income' ? '+' : '−'}
+                          {formatCurrency(t.amount)}
+                        </span>
                       </td>
                       {isAdmin && (
-                        <td className="dash-table__actions">
-                          <button
-                            type="button"
-                            className="dash-link-btn"
-                            onClick={() => {
-                              setEditing(t)
-                              setModalOpen(true)
-                            }}
-                          >
-                            <SquarePen size={14} />
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            className="dash-link-btn dash-link-btn--danger"
-                            onClick={() => setDeleteTarget(t)}
-                          >
-                            <Trash2 size={14} />
-                            Delete
-                          </button>
+                        <td
+                          className="dash-table__actions dash-tx-mob__actions"
+                          data-label="Actions"
+                        >
+                          <span className="dash-table__cell-body">
+                            <button
+                              type="button"
+                              className="dash-link-btn"
+                              onClick={() => {
+                                setEditing(t)
+                                setModalOpen(true)
+                              }}
+                            >
+                              <SquarePen size={14} />
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              className="dash-link-btn dash-link-btn--danger"
+                              onClick={() => setDeleteTarget(t)}
+                            >
+                              <Trash2 size={14} />
+                              Delete
+                            </button>
+                          </span>
                         </td>
                       )}
                     </tr>

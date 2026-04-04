@@ -1,16 +1,29 @@
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { useFinanceStore } from '../store/useFinanceStore'
-import { formatCurrency, formatDate, transactionDescription } from '../utils/format'
+import { useFinanceStore } from '../../store/useFinanceStore'
+import {
+  formatCurrency,
+  formatDate,
+  formatShortDate,
+  transactionDescription,
+} from '../../utils/format'
 import { CategoryIcon } from './CategoryIcon'
 
 export function RecentTransactions() {
   const transactions = useFinanceStore((s) => s.transactions)
 
   const recent = useMemo(() => {
-    return [...transactions]
-      .sort((a, b) => new Date(b.date) - new Date(a.date))
-      .slice(0, 3)
+    const sorted = [...transactions].sort(
+      (a, b) => new Date(b.date) - new Date(a.date),
+    )
+    const newestIncome = sorted.find((t) => t.type === 'income')
+    if (!newestIncome) return sorted.slice(0, 3)
+    const others = sorted
+      .filter((t) => t.id !== newestIncome.id)
+      .slice(0, 2)
+    return [...others, newestIncome].sort(
+      (a, b) => new Date(b.date) - new Date(a.date),
+    )
   }, [transactions])
 
   return (
@@ -61,9 +74,14 @@ export function RecentTransactions() {
                   </span>
                 </div>
                 <p className="dash-recent__meta">
-                  <span>{tx.category}</span>
-                  <span className="dash-recent__meta-dot" />
-                  <span>{formatDate(tx.date)}</span>
+                  <span className="dash-recent__meta-cat">{tx.category}</span>
+                  <span className="dash-recent__meta-dot" aria-hidden />
+                  <span
+                    className="dash-recent__meta-date"
+                    title={formatDate(tx.date)}
+                  >
+                    {formatShortDate(tx.date)}
+                  </span>
                 </p>
               </div>
 

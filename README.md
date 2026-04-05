@@ -1,6 +1,33 @@
-# Ledger — Personal finance dashboard
+# Ledger — Finance Dashboard UI
 
-A production-style **single-page application** for exploring income, spending, and cash-flow signals. Built with **React 19** and **Vite**, it runs entirely in the browser: data is **seeded and persisted locally** (no backend), with an optional **admin / viewer** role switch to demonstrate permission-aware UI.
+**Submission for:** Zorvyn · **Finance Dashboard UI** · Frontend Developer Intern  
+**Author:** Akash SakthiMurugan · sakthimuruganakash@gmail.com  
+
+A **React + Vite** finance dashboard for tracking summary balances, transactions, and spending patterns. The app is **frontend-only** with **mock data** and **local persistence**, matching the assignment scope (not production-ready, no backend).
+
+**Repository:** [github.com/akash768145s/finance-dashboard-ui](https://github.com/akash768145s/finance-dashboard-ui)  
+**Live demo:** [finance-dashboard-akash.vercel.app](https://finance-dashboard-akash.vercel.app/)
+
+---
+
+## Assignment requirements — how this project maps
+
+| # | Requirement | Implementation |
+|---|----------------|------------------|
+| **1** | **Dashboard overview** — summary cards (balance, income, expenses); time-based viz; categorical viz | **Available funds**, **total income**, **total expenses**, **net cash flow** with MoM % hints where data allows; **balance trend** (month-end balance over time); **spending by category** donut (**latest month with activity**). |
+| **2** | **Transactions** — date, amount, category, type; filtering; sorting or search | Full table with **date, amount, category, type, note**; **category & type filters**, **search** (category / note / type), **sort** by date, amount, or category (asc/desc). |
+| **3** | **Role-based UI (simulated)** — viewer read-only; admin add/edit; switch in UI | **Header role dropdown:** **Viewer** = read-only; **Admin** = add / edit / delete (with confirm). No server RBAC. |
+| **4** | **Insights** — highest spending category, monthly comparison, useful observations | Dedicated **`/insights`** route: top category / split, **spending over time** + this vs last month, **financial health** metrics and short narrative copy. |
+| **5** | **State management** — transactions, filters, role | **Zustand** store: transactions, opening balance, role, theme, filters, search, sort; derived metrics in **`useFinanceMetrics`**. |
+| **6** | **UI / UX** — clean, responsive, empty states | **Dark/light** theme, **responsive** layout (e.g. stacked metric rows on small screens), **empty states** for no data / no filter results. |
+
+### Optional enhancements included
+
+- **Dark mode** (persisted)  
+- **localStorage** persistence (transactions, opening balance, role, theme)  
+- **Export** filtered transactions as **CSV** or **JSON**  
+- **Animations / transitions** (e.g. insights panel reveals)  
+- *Mock API:* not used — data is static seed + store (acceptable per brief)
 
 ---
 
@@ -23,10 +50,10 @@ A production-style **single-page application** for exploring income, spending, a
 
 | Area | What you get |
 |------|----------------|
-| **Dashboard** | Overview cards (available funds, income, expenses, net) with **month-over-month % trends** when two months exist; **balance trend** chart (month-end balance); **spending by category** donut for the **latest month with activity**; **recent transactions** (short preview of the latest three, with **View all** to the ledger). |
-| **Transactions** | Sortable, filterable table (**date / amount / category**; **asc / desc**); search across category, note, and type; **CSV** and **JSON** export of the current filtered view; **admin** can add, edit, and delete rows (with confirm); **viewer** is read-only. |
-| **Insights** | Dedicated analytics view: **net after spending** for the latest month, **spending vs last month**, **category split** (donut + narrative), **spending-over-time** bar chart with comparison rows, **financial health** panel (savings status, streaks, savings rate, income, averages, pay change vs prior month, etc.) with short copy. |
-| **UX** | **Dark / light** theme (persisted); responsive layout (including stacked metric rows on small screens); side navigation with **collapse** and mobile overlay; empty states when data or filters yield no rows. |
+| **Dashboard** | Overview cards with **month-over-month %** where two months exist; **balance trend** chart; **spending breakdown** donut (latest active month); **recent transactions** preview (latest three) + link to full ledger. |
+| **Transactions** | Sortable, filterable table; **CSV / JSON** export of the current view; **admin** CRUD; **viewer** read-only. |
+| **Insights** | Net vs spending signals, category split, bar chart over months, comparison rows, **financial health** panel + microcopy. |
+| **Shell** | Side nav (collapse + mobile), header (brand, role, theme toggle). |
 
 ---
 
@@ -38,23 +65,29 @@ A production-style **single-page application** for exploring income, spending, a
 | Build | **Vite 8**, **@vitejs/plugin-react**, React Compiler (Babel) |
 | Charts | **Recharts 3** |
 | Icons | **Lucide React** |
-| State | **Zustand 5** + `persist` middleware → `localStorage` |
-| Linting | **ESLint 9** (React Hooks + Refresh) |
+| State | **Zustand 5** + `persist` → `localStorage` |
+| Styling | **CSS** (feature split: dashboard, insights, transactions, base) |
+| Lint | **ESLint 9** (React Hooks + Refresh) |
 
 ---
 
 ## Getting started
 
-**Prerequisites:** Node.js **20+** (LTS recommended) and npm.
+**Prerequisites:** Node.js **20+** (LTS) and npm.
 
 ```bash
-git clone https://github.com/akash768145s/finance-dashboard-ui
-cd dashboard
+git clone https://github.com/akash768145s/finance-dashboard-ui.git
+cd finance-dashboard-ui
 npm install
 npm run dev
 ```
 
-Open the URL Vite prints (typically **http://localhost:5173**).
+Open the URL Vite prints (usually **http://localhost:5173**).
+
+```bash
+npm run build    # output: dist/
+npm run preview  # serve dist locally
+```
 
 ---
 
@@ -62,107 +95,86 @@ Open the URL Vite prints (typically **http://localhost:5173**).
 
 | Command | Purpose |
 |---------|---------|
-| `npm run dev` | Start dev server with HMR |
-| `npm run build` | Optimized production build → `dist/` |
-| `npm run preview` | Serve `dist/` locally to verify the build |
-| `npm run lint` | Run ESLint on the project |
+| `npm run dev` | Dev server + HMR |
+| `npm run build` | Production build |
+| `npm run preview` | Preview production build |
+| `npm run lint` | ESLint |
 
 ---
 
 ## Application map
 
-Routes are declared in `src/App.jsx`:
-
 | Path | View |
 |------|------|
-| `/` | Dashboard (overview + charts + recent activity) |
-| `/transactions` | Full transaction ledger and controls |
-| `/insights` | Multi-panel insights layout |
+| `/` | Dashboard |
+| `/transactions` | Transactions |
+| `/insights` | Insights |
 
-Global chrome: **header** (brand, role, theme), **side navigation**, **footer**.
+Layout: header (role, theme), side navigation, main content, footer.
 
 ---
 
 ## Data model & calculations
 
-- **Currency:** USD, formatted with `Intl.NumberFormat`.
-- **Transactions:** Positive amounts with a **`type`** of `income` or `expense`; optional **note**; **category** from the seeded vocabulary in `src/data/mockData.js`.
-- **Available balance:** `openingBalance + Σ(income) − Σ(expense)` over all stored transactions (see `useSummary` in `src/hooks/useFinanceMetrics.js`).
-- **Month boundaries:** Rollups use calendar **`yyyy-mm`** keys derived from ISO dates (`src/utils/format.js`).
-- **Shared balance math:** `balanceBeforeMonth` and `balanceAtEndOfMonth` in `src/utils/financeAggregates.js` keep **dashboard charts** and **insights tooltips** aligned on the same running-balance rules.
-
-Insights such as “latest month,” “previous month,” category totals for the latest month, and health metrics are centralized in **`useInsights()`** so the UI stays consistent.
+- **USD** via `Intl.NumberFormat`.
+- **Transactions:** positive amounts; **`type`:** `income` | `expense`; **category** from `src/data/mockData.js`; optional **note**.
+- **Available funds:** opening balance + net of all transactions (`useSummary`).
+- **Months:** `yyyy-mm` from ISO dates (`src/utils/format.js`).
+- **Shared rollups:** `src/utils/financeAggregates.js` (`balanceBeforeMonth`, `balanceAtEndOfMonth`) keeps charts and tooltips aligned.
+- **Insights:** centralized in **`useInsights()`** / **`useFinanceMetrics.js`** so Dashboard and Insights use the same definitions for “latest month,” totals, and comparisons.
 
 ---
 
 ## State & persistence
 
-`src/store/useFinanceStore.js` holds:
+**Store:** `src/store/useFinanceStore.js` — transactions, opening balance, role, theme, filters, search, sort.
 
-- Transactions, opening balance  
-- Role (`admin` \| `viewer`), theme (`light` \| `dark`)  
-- Transaction filters, search, sort  
-
-**Persisted** to `localStorage` under the key **`finance-dashboard`**: transactions, opening balance, role, theme. **Filters and search reset** on reload by design so each session starts with a clean table scope.
+**Persisted** (`localStorage`, key `finance-dashboard`): transactions, opening balance, role, theme.  
+**Not persisted:** filters and search (fresh session for the table).
 
 ---
 
 ## Project structure
 
 ```
-dashboard/
-├── public/                 # Static assets
-├── src/
-│   ├── assets/             # Brand / images
-│   ├── components/
-│   │   ├── Base/           # Header, Footer, ThemeSync, ConfirmDialog
-│   │   ├── Dashboard/      # Overview, charts, recent list
-│   │   ├── Insights/       # Insights page + spending breakdown
-│   │   └── Transactions/   # Table, modal, filters, export
-│   ├── data/
-│   │   └── mockData.js     # Seed data + demo helpers
-│   ├── hooks/
-│   │   └── useFinanceMetrics.js   # Selectors & derived metrics
-│   ├── store/
-│   │   └── useFinanceStore.js     # Zustand store + persistence
-│   ├── styles/             # Feature CSS (dashboard, insights, …)
-│   ├── utils/
-│   │   ├── format.js       # Dates, currency, labels
-│   │   └── financeAggregates.js   # Balance-at-month utilities
-│   ├── App.jsx             # Routes + shell layout
-│   ├── dashboard.css       # App shell imports
-│   └── main.jsx            # Entry
-├── index.html
-├── package.json
-├── vite.config.js
-└── eslint.config.js
+src/
+├── components/
+│   ├── Base/          # Header, Footer, ThemeSync, ConfirmDialog
+│   ├── Dashboard/     # Summary, charts, recent transactions
+│   ├── Insights/      # Insights page, spending breakdown
+│   └── Transactions/  # Table, modal, filters, export
+├── data/mockData.js
+├── hooks/useFinanceMetrics.js
+├── store/useFinanceStore.js
+├── styles/            # dashboard-*.css
+├── utils/format.js, financeAggregates.js
+├── App.jsx
+└── main.jsx
 ```
 
 ---
 
 ## Assumptions & limitations
 
-- **No API:** All data is local; persistence is per-browser.
-- **Demo roles:** Authorization is UI-only (no server enforcement).
-- **Single currency:** Multi-currency and tax rules are out of scope.
-- **Opening balance** is editable only through persisted state / seed; there is no separate “accounts” model.
-
-These boundaries keep the scope focused on **clear UX**, **consistent aggregates**, and a **maintainable** React codebase suitable for portfolio or coursework submission.
+- **No backend** — demo / evaluation scope per assignment.
+- **Roles** are UI-only (not enforceable server-side).
+- **Single currency**; no bank linking or imports.
+- Reasonable assumptions on copy and layout, as encouraged in the brief.
 
 ---
 
 ## Quality & accessibility
 
-- Semantic sections and headings; **ARIA** labels on icon-only controls (e.g. nav toggle, theme).
-- **Keyboard-friendly** patterns where applicable (dialogs, forms).
-- **ESLint** configured for React and hooks; run `npm run lint` before submission or CI.
+- Semantic headings and landmarks; **ARIA** on icon-only controls where needed.
+- Dialogs and forms usable with keyboard where applicable.
+- Run **`npm run lint`** before final checks.
 
 ---
 
-## Author & license
+## Note for reviewers
 
-This repository is marked **private** in `package.json`. Replace this section with your name, course, and license if you publish or submit formally.
+This project is submitted as **original work** for **Zorvyn FinTech Pvt. Ltd.** — **Finance Dashboard UI** (Frontend Developer Intern). It is intended to demonstrate **UI structure**, **state handling**, and **clarity of presentation** rather than production infrastructure.
 
 ---
 
-*Ledger — a focused finance dashboard demo: one ledger, consistent math, and a full path from overview to transactions to insights.*
+*Ledger — one ledger, consistent rollups, from overview → transactions → insights.*

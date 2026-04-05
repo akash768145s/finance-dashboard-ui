@@ -139,6 +139,7 @@ function InsightsPage() {
 }
 
 export default function App() {
+  const location = useLocation()
   const [isNavOpen, setIsNavOpen] = useState(true)
   const [isNavCollapsed, setIsNavCollapsed] = useState(false)
 
@@ -178,12 +179,14 @@ export default function App() {
         />
         <Header />
         <main className="dash-main">
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/transactions" element={<TransactionsPage />} />
-            <Route path="/insights" element={<InsightsPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+          <div key={location.pathname} className="dash-main__route">
+            <Routes>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/insights" element={<InsightsPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
         </main>
         <Footer />
       </div>

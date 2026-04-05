@@ -560,6 +560,34 @@
   gap: 1.5rem;
 }
 
+/* Minimal enter transition when switching Dashboard / Transactions / Insights */
+.dash-main__route {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: inherit;
+  animation: dash-route-enter 0.34s ease-out;
+}
+
+@keyframes dash-route-enter {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-main__route {
+    animation: none;
+  }
+}
+
 /* Section title (Insights + Transactions) */
 .dash-section__title {
   font-family: var(--font-display);

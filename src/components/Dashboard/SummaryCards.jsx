@@ -1,4 +1,4 @@
-import { formatCurrency } from '../../utils/format'
+import { formatCurrency, formatMonthLabel } from '../../utils/format'
 import { useInsights, useSummary } from '../../hooks/useFinanceMetrics'
 import {
   ArrowDown,
@@ -17,6 +17,8 @@ export function SummaryCards() {
     expenseLast,
     netThis,
     monthDeltaPct,
+    latestMonthKey,
+    previousMonthKey,
   } = useInsights()
   const netCash = income - expenses
   const savingsRateThisMonth =
@@ -52,6 +54,20 @@ export function SummaryCards() {
       <h2 id="summary-heading" className="dash-overview__title">
         Financial Overview
       </h2>
+      {latestMonthKey ? (
+        <p className="dash-overview__lede">
+          Income, expense, and net cash are <strong>all-time</strong>. Percent
+          changes compare{' '}
+          <strong>{formatMonthLabel(latestMonthKey)}</strong>
+          {previousMonthKey ? (
+            <>
+              {' '}
+              to <strong>{formatMonthLabel(previousMonthKey)}</strong>
+            </>
+          ) : null}
+          .
+        </p>
+      ) : null}
       <div className="dash-overview__cards">
         <article className="dash-overview-card dash-overview-card--networth">
           <div className="dash-overview-card__head">

@@ -793,10 +793,6 @@
   gap: 1rem;
 }
 
-.dash-footer__reset {
-  margin-right: auto;
-}
-
 .dash-footer::before {
   content: '';
   position: absolute;
@@ -943,11 +939,6 @@
     align-items: flex-end;
     padding-left: 0.85rem;
     padding-right: 0.85rem;
-  }
-
-  .dash-footer__reset {
-    margin-right: 0;
-    align-self: flex-start;
   }
 
   .dash-footer__strip {

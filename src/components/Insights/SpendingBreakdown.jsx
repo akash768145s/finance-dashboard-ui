@@ -6,8 +6,8 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
-import { formatCurrency } from '../../utils/format'
-import { useSpendingByCategory } from '../../hooks/useFinanceMetrics'
+import { formatCurrency, formatMonthLabel } from '../../utils/format'
+import { useSpendingByCategoryLatestMonth } from '../../hooks/useFinanceMetrics'
 
 const PIE_COLORS = [
   '#0b3c92',
@@ -39,18 +39,20 @@ function formatCompactCurrency(value) {
 }
 
 export function SpendingBreakdown() {
-  const data = useSpendingByCategory()
+  const { monthKey, data } = useSpendingByCategoryLatestMonth()
   const total = useMemo(
     () => data.reduce((s, d) => s + d.value, 0),
     [data],
   )
 
-  if (data.length === 0) {
+  if (!monthKey || data.length === 0) {
     return (
       <section className="dash-panel" aria-labelledby="spend-heading">
         <h2 id="spend-heading" className="dash-panel__title">Spending by category</h2>
         <p className="dash-empty dash-empty--inline">
-          No expense transactions yet.
+          {!monthKey
+            ? 'No transactions yet.'
+            : 'No spending in the latest month with activity.'}
         </p>
       </section>
     )
@@ -59,13 +61,9 @@ export function SpendingBreakdown() {
   return (
     <section className="dash-panel dash-panel--donut" aria-labelledby="spend-heading">
       <h2 id="spend-heading" className="dash-panel__title">Spending by Category</h2>
-      <p className="dash-panel__desc">All-time by category</p>
+      <p className="dash-panel__desc">{formatMonthLabel(monthKey)}</p>
       <div className="dash-chart-wrap dash-chart-wrap--pie-modern">
-        <div className="dash-donut__center">
-          <span className="dash-donut__value">{formatCompactCurrency(total)}</span>
-          <span className="dash-donut__label">TOTAL SPENT</span>
-        </div>
-        <ResponsiveContainer width="100%" height={198}>
+        <ResponsiveContainer width="100%" height={198} className="dash-donut__chart">
           <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
             <Pie
               data={data}
@@ -73,8 +71,8 @@ export function SpendingBreakdown() {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={54}
-              outerRadius={77}
+              innerRadius={62}
+              outerRadius={80}
               paddingAngle={2}
             >
               {data.map((_, i) => (
@@ -88,6 +86,10 @@ export function SpendingBreakdown() {
             <Tooltip content={<TooltipContent />} />
           </PieChart>
         </ResponsiveContainer>
+        <div className="dash-donut__center">
+          <span className="dash-donut__value">{formatCompactCurrency(total)}</span>
+          <span className="dash-donut__label">TOTAL SPENT</span>
+        </div>
       </div>
       <ul className="dash-donut__legend">
         {data.slice(0, 4).map((item, idx) => {

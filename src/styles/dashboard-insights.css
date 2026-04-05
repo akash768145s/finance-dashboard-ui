@@ -27,8 +27,8 @@
   --insh-space-2: 14px;
   --insh-space-3: 18px;
   --insh-space-4: 28px;
-  /* One value for row + column = even gutters (no row/column mismatch) */
-  --insh-grid-gap: 12px;
+  /* Single gap token: row and column stay identical for a tidy grid */
+  --insh-grid-gap: 11px;
 
   width: 100%;
   max-width: min(100%, 72rem);
@@ -188,37 +188,49 @@
   text-shadow: 0 1px 36px color-mix(in oklab, var(--accent) 16%, transparent);
 }
 
-/* Grid — uniform gutters; start-aligned so row height follows content */
+.insh__lede {
+  margin: 0.65rem 0 0;
+  max-width: 36rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: color-mix(in oklab, var(--insh-muted) 92%, var(--insh-ink) 8%);
+}
+
+.insh__lede strong {
+  color: var(--insh-ink);
+  font-weight: 600;
+}
+
+/* Grid — stretch row heights so paired cards share one baseline; even gutters */
 .insh__grid {
   display: grid;
-  gap: var(--insh-grid-gap);
   grid-template-columns: 1fr;
-  align-items: start;
+  align-items: stretch;
+  gap: var(--insh-grid-gap);
 }
 
 @media (min-width: 640px) {
   .insh__grid {
-    --insh-grid-gap: 14px;
+    --insh-grid-gap: 13px;
   }
 }
 
 @media (min-width: 900px) {
   .insh__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--insh-grid-gap);
   }
 }
 
 @media (min-width: 1200px) {
   .insh__grid {
-    --insh-grid-gap: 16px;
+    --insh-grid-gap: 15px;
   }
 }
 
-.insh__grid>.insh-panel {
+.insh__grid > .insh-panel {
   min-width: 0;
   min-height: 0;
-  height: auto;
+  align-self: stretch;
 }
 
 /* Reveal */
@@ -249,6 +261,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  gap: var(--insh-space-2);
   padding: 1.15rem 1.25rem 1.2rem;
   border-radius: var(--insh-radius);
   background:
@@ -356,7 +369,8 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  margin-bottom: var(--insh-space-2);
+  margin-bottom: 0;
+  flex-shrink: 0;
 }
 
 .insh-panel__glyph {
@@ -393,8 +407,9 @@
 }
 
 .insh-panel__insight {
-  margin-top: var(--insh-space-2);
+  margin-top: auto;
   margin-bottom: 0;
+  flex-shrink: 0;
   padding: 10px 12px 11px 14px;
   border-radius: var(--insh-radius-xs);
   border: 1px solid var(--insh-border-soft);
@@ -425,6 +440,12 @@
   color: var(--insh-muted);
 }
 
+/* Empty-state panels: center the message in the vertical space */
+.insh-panel:has(> .insh-panel__empty):not(:has(> .insh-panel__insight)) > .insh-panel__empty {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
 /* Delta arrows (Lucide) next to currency */
 .insh-delta-icon {
   flex-shrink: 0;
@@ -449,6 +470,9 @@
   display: flex;
   flex-direction: column;
   gap: var(--insh-space-2);
+  flex: 1 1 auto;
+  min-height: 0;
+  justify-content: center;
 }
 
 @media (min-width: 560px) {
@@ -595,6 +619,9 @@
   display: grid;
   gap: var(--insh-space-2);
   align-items: center;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: center;
 }
 
 @media (min-width: 520px) {
@@ -740,7 +767,7 @@
 }
 
 .insh-chart--well {
-  padding: 10px 8px 6px;
+  padding: 10px 10px 12px;
   border-radius: var(--insh-radius-sm);
   background: color-mix(in oklab, var(--insh-well) 85%, transparent);
   border: 1px solid color-mix(in oklab, var(--insh-border-soft) 90%, var(--accent) 10%);
@@ -749,9 +776,14 @@
     0 12px 36px color-mix(in oklab, var(--insh-chart-b) 6%, transparent);
 }
 
+.insh-chart--well .recharts-responsive-container,
+.insh-chart--well .recharts-wrapper {
+  overflow: visible;
+}
+
 /* Shared key-value block — spending compare + financial health */
 .insh-fig-rows {
-  margin: var(--insh-space-2) 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -761,14 +793,6 @@
   overflow: hidden;
   background: color-mix(in oklab, var(--insh-elevated) 94%, transparent);
   box-shadow: 0 1px 0 color-mix(in oklab, var(--text-heading) 3%, transparent) inset;
-}
-
-.insh-panel--chart .insh-fig-rows {
-  margin-top: var(--insh-space-2);
-}
-
-.insh-panel--health .insh-fig-rows {
-  margin-top: 0;
 }
 
 .insh-fig-rows__row {
@@ -813,12 +837,51 @@
   font-weight: 650;
 }
 
-.insh-fig-rows__dd--down {
+@media (max-width: 520px) {
+  .insh-fig-rows__row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    min-height: 0;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .insh-fig-rows__row dt {
+    max-width: 100%;
+    padding-right: 0;
+  }
+
+  .insh-fig-rows__row dd {
+    width: 100%;
+    text-align: left;
+  }
+
+  .insh-fig-rows__dd--delta {
+    justify-content: flex-start;
+  }
+
+  .insh-panel--health .insh-fig-rows__row {
+    min-height: 0;
+  }
+}
+
+/*
+ * --down = green, --up = red.
+ * Spending “Difference”: higher vs last month (↑) = red; lower = green.
+ * “Pay change”: more income than prior month (↑) = green; less = red.
+ */
+.insh-fig-rows__row dd.insh-fig-rows__dd--down {
   color: var(--income);
 }
 
-.insh-fig-rows__dd--up {
+.insh-fig-rows__row dd.insh-fig-rows__dd--up {
   color: var(--expense);
+}
+
+.insh-fig-rows__row dd.insh-fig-rows__dd--down .insh-delta-icon,
+.insh-fig-rows__row dd.insh-fig-rows__dd--up .insh-delta-icon {
+  color: inherit;
 }
 
 .insh-fig-rows__row--tone-pos {
@@ -856,6 +919,58 @@
 
 .insh-panel--health {
   min-height: 0;
+}
+
+/* Financial health — same stack as before; tighter visual finish */
+.insh-panel--health .insh-fig-rows {
+  border-color: color-mix(in oklab, var(--insh-border-soft) 78%, var(--accent) 22%);
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--text-heading) 4%, transparent) inset,
+    0 10px 32px color-mix(in oklab, var(--accent) 7%, transparent);
+}
+
+.insh-panel--health .insh-fig-rows__row {
+  padding: 11px 14px;
+  min-height: 50px;
+  border-bottom-color: color-mix(in oklab, var(--insh-border-soft) 88%, var(--insh-ink) 12%);
+}
+
+.insh-panel--health .insh-fig-rows__row dd {
+  font-variant-numeric: tabular-nums;
+}
+
+.insh-panel--health .insh-fig-rows__row--emph {
+  background: color-mix(
+    in oklab,
+    var(--accent) 8%,
+    color-mix(in oklab, var(--surface-3) 44%, var(--insh-elevated))
+  );
+}
+
+.insh-panel--health .insh-panel__insight--flow {
+  box-shadow:
+    0 1px 0 color-mix(in oklab, var(--text-heading) 3.5%, transparent) inset,
+    0 8px 22px color-mix(in oklab, var(--income) 10%, transparent);
+}
+
+[data-theme='light'] .insh-panel--health .insh-fig-rows {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.92) inset,
+    0 8px 26px rgba(15, 23, 42, 0.05);
+}
+
+[data-theme='light'] .insh-panel--health .insh-fig-rows__row--emph {
+  background: color-mix(
+    in oklab,
+    var(--accent) 9%,
+    color-mix(in oklab, #faf8ff 78%, var(--surface-3) 22%)
+  );
+}
+
+[data-theme='light'] .insh-panel--health .insh-panel__insight--flow {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.96) inset,
+    0 6px 18px rgba(4, 120, 87, 0.07);
 }
 
 /* Bar chart hover tooltip */

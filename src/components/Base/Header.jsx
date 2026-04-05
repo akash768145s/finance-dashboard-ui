@@ -14,7 +14,7 @@ export function Header() {
         <img className="dash-logo" src={brandMark} alt="Zorvyn brand mark" />
         <div className="dash-header__brand-text">
           <h1 className="dash-header__title">Ledger</h1>
-          <p className="dash-header__sub">Personal finance overview</p>
+          <p className="dash-header__sub">Track your money flow</p>
         </div>
       </div>
       <div className="dash-header__actions">
@@ -32,8 +32,8 @@ export function Header() {
               }
               aria-label="Switch role for demo"
             >
-              <option value="viewer">Viewer</option>
               <option value="admin">Admin</option>
+              <option value="viewer">Viewer</option>
             </select>
           </label>
         </div>

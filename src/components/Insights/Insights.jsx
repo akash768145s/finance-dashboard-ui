@@ -8,7 +8,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { formatCurrency } from '../../utils/format'
+import { formatCurrency, formatMonthLabel } from '../../utils/format'
+import { balanceAtEndOfMonth } from '../../utils/financeAggregates'
 import { useInsights } from '../../hooks/useFinanceMetrics'
 import { useFinanceStore } from '../../store/useFinanceStore'
 import {
@@ -213,25 +214,6 @@ function patternWord(pattern) {
   return 'Unclear'
 }
 
-/**
- * Running balance after all transactions on or before the last day of `yearMonth`.
- * @param {number} openingBalance
- * @param {import('../../data/mockData').Transaction[]} transactions
- * @param {string} yearMonth
- */
-function balanceAtEndOfMonth(openingBalance, transactions, yearMonth) {
-  const [y, mo] = yearMonth.split('-').map(Number)
-  const lastDay = new Date(y, mo, 0).getDate()
-  const endStr = `${y}-${String(mo).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
-  let running = openingBalance
-  const sorted = [...transactions].sort((a, b) => a.date.localeCompare(b.date))
-  for (const t of sorted) {
-    if (t.date > endStr) break
-    running += t.type === 'income' ? t.amount : -t.amount
-  }
-  return running
-}
-
 function SpendingBarTooltip({ active, payload }) {
   if (!active || !payload?.length) return null
   const row = payload[0]?.payload
@@ -277,6 +259,11 @@ export function Insights() {
   const savingsRateRounded =
     ins.savingsRatePct != null ? Math.round(ins.savingsRatePct) : null
 
+  const incomeChangeVsPriorAbs =
+    ins.incomeChangeVsPriorMonth != null
+      ? Math.abs(ins.incomeChangeVsPriorMonth)
+      : null
+
   const compareLine = comparisonMicrocopy(ins.expenseDelta, ins.expenseLast)
 
   const savingsTone =
@@ -311,10 +298,16 @@ export function Insights() {
   return (
     <div className="insh">
       <header className="insh__masthead">
-        <p className="insh__eyebrow">Financial insights</p>
+        <p className="insh__eyebrow">Insights</p>
         <h2 id="fi-page-title" className="insh__title">
-          What your money is telling you
+          Monthly snapshot
         </h2>
+        {ins.latestMonthKey ? (
+          <p className="insh__lede">
+            Spending, cash flow, and savings through{' '}
+            <strong>{formatMonthLabel(ins.latestMonthKey)}</strong>.
+          </p>
+        ) : null}
       </header>
 
       <div className="insh__grid">
@@ -364,7 +357,7 @@ export function Insights() {
                     >
                       <span className="insh-stat__k">Vs last month</span>
                       <span
-                        className={`insh-stat__v tabular-nums insh-stat__v--delta ${ins.expenseDelta <= 0 ? 'insh-stat__v--good' : 'insh-stat__v--warn'}`}
+                        className={`insh-stat__v tabular-nums insh-stat__v--delta ${ins.expenseDelta > 0 ? 'insh-stat__v--warn' : ins.expenseDelta < 0 ? 'insh-stat__v--good' : 'insh-stat__v--muted'}`}
                       >
                         <ExpenseDeltaArrow delta={ins.expenseDelta} />
                         <AnimatedCurrency
@@ -462,8 +455,8 @@ export function Insights() {
                 <ResponsiveContainer width="100%" height={196}>
                   <BarChart
                     data={spendingChartData}
-                    margin={{ top: 14, right: 8, left: 0, bottom: 4 }}
-                    barCategoryGap="28%"
+                    margin={{ top: 12, right: 6, left: 0, bottom: 26 }}
+                    barCategoryGap="24%"
                   >
                     <defs>
                       <linearGradient
@@ -483,12 +476,20 @@ export function Insights() {
                       tickLine={false}
                       tick={{
                         fill: 'var(--insh-muted)',
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: 600,
                       }}
-                      dy={10}
+                      dy={6}
+                      interval={0}
                     />
-                    <YAxis hide domain={[0, 'auto']} />
+                    <YAxis
+                      hide
+                      domain={[
+                        0,
+                        (max) =>
+                          max > 0 ? Math.ceil(max * 1.06) : 1,
+                      ]}
+                    />
                     <Tooltip
                       content={<SpendingBarTooltip />}
                       cursor={{
@@ -497,8 +498,11 @@ export function Insights() {
                     />
                     <Bar
                       dataKey="expense"
-                      radius={[11, 11, 5, 5]}
-                      maxBarSize={36}
+                      radius={[6, 6, 2, 2]}
+                      maxBarSize={34}
+                      minPointSize={(v) =>
+                        typeof v === 'number' && v > 0 ? 12 : 0
+                      }
                       isAnimationActive={!reducedMotion}
                       animationDuration={reducedMotion ? 0 : 1100}
                       animationEasing="cubic-bezier(0.22, 1, 0.36, 1)"
@@ -531,7 +535,7 @@ export function Insights() {
                   <div className="insh-fig-rows__row insh-fig-rows__row--emph">
                     <dt>Difference</dt>
                     <dd
-                      className={`tabular-nums insh-fig-rows__dd--delta ${ins.expenseDelta != null && ins.expenseDelta <= 0 ? 'insh-fig-rows__dd--down' : 'insh-fig-rows__dd--up'}`}
+                      className={`tabular-nums insh-fig-rows__dd--delta${ins.expenseDelta != null && ins.expenseDelta > 0 ? ' insh-fig-rows__dd--up' : ins.expenseDelta != null && ins.expenseDelta < 0 ? ' insh-fig-rows__dd--down' : ''}`}
                     >
                       {ins.expenseDelta != null ? (
                         <>
@@ -590,6 +594,37 @@ export function Insights() {
                   <dt>Savings rate</dt>
                   <dd className="tabular-nums insh-fig-rows__rate">
                     {savingsRateRounded != null ? `${savingsRateRounded}%` : '—'}
+                  </dd>
+                </div>
+                <div className="insh-fig-rows__row">
+                  <dt>Income</dt>
+                  <dd className="tabular-nums">
+                    {formatCurrency(ins.incomeThis)}
+                  </dd>
+                </div>
+                <div className="insh-fig-rows__row">
+                  <dt>Avg. monthly spend</dt>
+                  <dd className="tabular-nums">
+                    {formatCurrency(ins.avgMonthlyExpense)}
+                  </dd>
+                </div>
+                <div className="insh-fig-rows__row">
+                  <dt>Pay change</dt>
+                  <dd
+                    className={
+                      ins.incomeChangeVsPriorMonth == null
+                        ? 'tabular-nums insh-fig-rows__dd--delta'
+                        : `tabular-nums insh-fig-rows__dd--delta ${ins.incomeChangeVsPriorMonth > 0 ? 'insh-fig-rows__dd--down' : ins.incomeChangeVsPriorMonth < 0 ? 'insh-fig-rows__dd--up' : ''}`
+                    }
+                  >
+                    {ins.incomeChangeVsPriorMonth != null ? (
+                      <>
+                        <ExpenseDeltaArrow delta={ins.incomeChangeVsPriorMonth} />
+                        {formatCurrency(incomeChangeVsPriorAbs ?? 0)}
+                      </>
+                    ) : (
+                      '—'
+                    )}
                   </dd>
                 </div>
               </dl>

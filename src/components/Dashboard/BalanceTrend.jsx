@@ -7,25 +7,24 @@ import {
   Tooltip,
   XAxis,
 } from 'recharts'
-import { formatCurrency } from '../../utils/format'
-import { useBalanceTrendPoints } from '../../hooks/useFinanceMetrics'
+import { formatCurrency, formatMonthLabel } from '../../utils/format'
+import { useMonthlyBalanceTrend, useSummary } from '../../hooks/useFinanceMetrics'
 
 function TooltipContent({ active, payload }) {
   if (!active || !payload?.length) return null
   const p = payload[0]?.payload
   if (!p) return null
 
-  const delta = p.value - p.baseline
-  const deltaTone = delta >= 0 ? 'good' : 'bad'
+  const netTone = p.net >= 0 ? 'good' : 'bad'
 
   return (
     <div className="dash-chart-tooltip dash-chart-tooltip--balance">
-      <strong>{p.label}</strong>
-      <span>Projected: {formatCurrency(p.baseline)}</span>
-      <span>Actual: {formatCurrency(p.value)}</span>
-      <span className={`dash-balance-tooltip__delta dash-balance-tooltip__delta--${deltaTone}`}>
-        Variance: {delta >= 0 ? '+' : '-'}
-        {formatCurrency(Math.abs(delta))}
+      <strong>{p.labelFull}</strong>
+      <span>Start of month: {formatCurrency(p.monthStartBalance)}</span>
+      <span>End of month: {formatCurrency(p.balance)}</span>
+      <span className={`dash-balance-tooltip__delta dash-balance-tooltip__delta--${netTone}`}>
+        Net: {p.net >= 0 ? '+' : '−'}
+        {formatCurrency(Math.abs(p.net))}
       </span>
     </div>
   )
@@ -44,37 +43,27 @@ function useNarrowViewport(breakpointPx = 640) {
 }
 
 export function BalanceTrend() {
-  const points = useBalanceTrendPoints()
+  const monthlyRows = useMonthlyBalanceTrend()
+  const { balance: ledgerBalance } = useSummary()
   const narrow = useNarrowViewport(640)
 
   const data = useMemo(() => {
     const take = narrow ? 6 : 12
-    const trimmed = points.slice(-take)
-    return trimmed.map((point, index) => {
-      const month = new Date(`${point.date}T00:00:00`).toLocaleDateString('en-US', {
-        month: 'short',
-      })
-      const max = Math.max(...trimmed.map((p) => p.balance), 1)
-      const baseline = Math.max(point.balance * 1.12, max * 0.35)
-      const labelIndex = String(index + 1).padStart(2, '0')
-      const label = `${month.toUpperCase()} ${labelIndex}`
-
-      return {
-        month: month.toUpperCase(),
-        baseline,
-        value: point.balance,
-        label,
-      }
-    })
-  }, [points, narrow])
+    const trimmed = monthlyRows.slice(-take)
+    return trimmed.map((row) => ({
+      ...row,
+      label: row.shortLabel,
+      labelFull: formatMonthLabel(row.key),
+    }))
+  }, [monthlyRows, narrow])
 
   const latestPoint = data[data.length - 1]
   const previousPoint = data[data.length - 2]
-  const averageActual =
-    data.reduce((sum, item) => sum + item.value, 0) / Math.max(data.length, 1)
+  const averageEnd =
+    data.reduce((sum, item) => sum + item.balance, 0) / Math.max(data.length, 1)
   const growthPct =
-    previousPoint?.value > 0
-      ? ((latestPoint.value - previousPoint.value) / previousPoint.value) * 100
+    previousPoint?.balance > 0
+      ? ((latestPoint.balance - previousPoint.balance) / previousPoint.balance) * 100
       : null
 
   if (data.length === 0) {
@@ -91,24 +80,33 @@ export function BalanceTrend() {
       <header className="dash-panel__head">
         <div>
           <h2 id="trend-heading" className="dash-panel__title">Balance Trend</h2>
-          <p className="dash-panel__desc">Projected vs actual movement over recent periods</p>
+          <p className="dash-panel__desc">
+            Month start vs end balance
+          </p>
         </div>
         <span className="dash-balance__badge">Live Insights</span>
       </header>
 
       <div className="dash-balance__meta">
         <div className="dash-balance__stat">
-          <span>Latest Balance</span>
-          <strong>{formatCurrency(latestPoint.value)}</strong>
+          <span>Current balance</span>
+          <strong>{formatCurrency(ledgerBalance)}</strong>
         </div>
         <div className="dash-balance__stat">
-          <span>Average</span>
-          <strong>{formatCurrency(averageActual)}</strong>
+          <span>Avg. month-end (shown)</span>
+          <strong>{formatCurrency(averageEnd)}</strong>
         </div>
         <div className="dash-balance__stat">
           <span>Change</span>
-          <strong className={growthPct !== null && growthPct < 0 ? 'dash-balance__stat-bad' : ''}>
-            {growthPct === null ? 'N/A' : `${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`}
+          <strong
+            className={
+              growthPct !== null && growthPct < 0 ? 'dash-balance__stat-bad' : ''
+            }
+            title="Month-over-month change in end-of-month balance"
+          >
+            {growthPct === null
+              ? 'N/A'
+              : `${growthPct >= 0 ? '+' : ''}${growthPct.toFixed(1)}%`}
           </strong>
         </div>
       </div>
@@ -116,11 +114,11 @@ export function BalanceTrend() {
       <div className="dash-balance__legend">
         <span className="dash-balance__legend-item">
           <i className="dash-balance__legend-dot dash-balance__legend-dot--projected" />
-          Projected
+          Month start
         </span>
         <span className="dash-balance__legend-item">
           <i className="dash-balance__legend-dot dash-balance__legend-dot--actual" />
-          Actual
+          Month end
         </span>
       </div>
 
@@ -167,13 +165,13 @@ export function BalanceTrend() {
             />
             <Tooltip content={<TooltipContent />} />
             <Bar
-              dataKey="baseline"
+              dataKey="monthStartBalance"
               fill="url(#dashProjectedBar)"
               radius={narrow ? [10, 10, 0, 0] : [9, 9, 0, 0]}
               maxBarSize={narrow ? 28 : 24}
             />
             <Bar
-              dataKey="value"
+              dataKey="balance"
               fill="url(#dashActualBar)"
               radius={narrow ? [10, 10, 0, 0] : [9, 9, 0, 0]}
               maxBarSize={narrow ? 28 : 24}

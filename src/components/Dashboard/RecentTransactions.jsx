@@ -13,17 +13,9 @@ export function RecentTransactions() {
   const transactions = useFinanceStore((s) => s.transactions)
 
   const recent = useMemo(() => {
-    const sorted = [...transactions].sort(
-      (a, b) => new Date(b.date) - new Date(a.date),
-    )
-    const newestIncome = sorted.find((t) => t.type === 'income')
-    if (!newestIncome) return sorted.slice(0, 3)
-    const others = sorted
-      .filter((t) => t.id !== newestIncome.id)
-      .slice(0, 2)
-    return [...others, newestIncome].sort(
-      (a, b) => new Date(b.date) - new Date(a.date),
-    )
+    return [...transactions]
+      .sort((a, b) => b.date.localeCompare(a.date) || b.id.localeCompare(a.id))
+      .slice(0, 3)
   }, [transactions])
 
   return (

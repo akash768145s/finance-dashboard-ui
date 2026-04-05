@@ -1,26 +1,8 @@
-import { useState } from 'react'
-import { useFinanceStore } from '../../store/useFinanceStore'
-import { RefreshCcw } from 'lucide-react'
-import { ConfirmDialog } from './ConfirmDialog'
-
 export function Footer() {
-  const role = useFinanceStore((s) => s.role)
-  const resetDemoData = useFinanceStore((s) => s.resetDemoData)
-  const [confirmReset, setConfirmReset] = useState(false)
   const year = new Date().getFullYear()
 
   return (
     <footer className="dash-footer">
-      {role === 'admin' && (
-        <button
-          type="button"
-          className="dash-btn dash-btn--ghost dash-btn--small dash-footer__reset"
-          onClick={() => setConfirmReset(true)}
-        >
-          <RefreshCcw size={14} />
-          Reset demo data
-        </button>
-      )}
       <div className="dash-footer__brand">
         <div className="dash-footer__strip">
           <p className="dash-footer__text">
@@ -41,17 +23,6 @@ export function Footer() {
           </p>
         </div>
       </div>
-      <ConfirmDialog
-        open={confirmReset}
-        title="Reset demo data"
-        message="This will restore the original mock transactions and overwrite your current edits."
-        confirmText="Reset"
-        onCancel={() => setConfirmReset(false)}
-        onConfirm={() => {
-          resetDemoData()
-          setConfirmReset(false)
-        }}
-      />
     </footer>
   )
 }

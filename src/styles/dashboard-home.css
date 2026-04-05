@@ -447,6 +447,19 @@
   line-height: var(--leading-tight);
 }
 
+.dash-overview__lede {
+  margin: -0.15rem 0 0;
+  max-width: 52rem;
+  color: var(--muted);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.dash-overview__lede strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .dash-overview__cards {
   display: grid;
   grid-template-columns: repeat(1, minmax(0, 1fr));
@@ -850,8 +863,34 @@
 .dash-chart-wrap--pie-modern {
   position: relative;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(200px, auto);
   place-items: center;
   min-height: 200px;
+  isolation: isolate;
+}
+
+/*
+ * Center label sits under the chart (z-index 0). The pie SVG is transparent in the hole,
+ * so the label still shows through; Recharts portals the tooltip into .recharts-wrapper, so
+ * the chart layer must stack above the center or the tooltip stays trapped underneath.
+ */
+.dash-chart-wrap--pie-modern .dash-donut__chart {
+  position: relative;
+  z-index: 1;
+  grid-column: 1;
+  grid-row: 1;
+  width: 100%;
+}
+
+.dash-chart-wrap--pie-modern .dash-donut__chart .recharts-responsive-container,
+.dash-chart-wrap--pie-modern .dash-donut__chart .recharts-wrapper {
+  position: relative;
+  z-index: 0;
+}
+
+.dash-chart-wrap--pie-modern .recharts-tooltip-wrapper {
+  z-index: 20;
 }
 
 .dash-donut__center {
@@ -862,7 +901,24 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 2;
+  z-index: 0;
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: stretch;
+  align-self: stretch;
+}
+
+.dash-donut__center::before {
+  content: '';
+  position: absolute;
+  width: min(46%, 118px);
+  height: min(46%, 118px);
+  max-width: 118px;
+  max-height: 118px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  z-index: -1;
+  pointer-events: none;
 }
 
 .dash-donut__value {
@@ -926,6 +982,32 @@
   background: linear-gradient(165deg, #111a30 0%, #0f172b 100%);
   border-color: #22314f;
   box-shadow: none;
+}
+
+/* Hero “Available funds” card — distinct from metric tiles in dark mode */
+[data-theme='dark'] .dash-overview-card--networth {
+  color: #f1f6ff;
+  background: linear-gradient(152deg,
+      #243560 0%,
+      #1a2d52 42%,
+      #121c34 100%);
+  border: 1px solid color-mix(in oklab, #8b9fe8 32%, #2a3f66 68%);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07);
+}
+
+[data-theme='dark'] .dash-overview-card--networth .dash-overview-card__label--networth {
+  color: rgba(225, 234, 255, 0.88);
+}
+
+[data-theme='dark'] .dash-overview-card--networth .dash-overview-card__value {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .dash-overview-card--networth .dash-overview-card__pill {
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(241, 246, 255, 0.96);
 }
 
 [data-theme='dark'] .dash-overview-card__value--dark {

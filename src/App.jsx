@@ -1,6 +1,12 @@
 import './dashboard.css'
-import { useEffect, useState } from 'react'
-import { NavLink, Navigate, Route, Routes } from 'react-router-dom'
+import { useEffect, useLayoutEffect, useState } from 'react'
+import {
+  NavLink,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom'
 import {
   CircleHelp,
   LayoutGrid,
@@ -22,7 +28,13 @@ import { TransactionsPanel } from './components/Transactions/TransactionsPanel'
 import { RecentTransactions } from './components/Dashboard/RecentTransactions'
 import { Footer } from './components/Base/Footer'
 
+function isOnNavRoute(pathname, item) {
+  if (item.end) return pathname === item.to
+  return pathname === item.to || pathname.startsWith(`${item.to}/`)
+}
+
 function SideNav({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
+  const { pathname } = useLocation()
   const navItems = [
     { to: '/', label: 'Dashboard', end: true, icon: LayoutGrid },
     { to: '/transactions', label: 'Transactions', icon: WalletCards },
@@ -78,7 +90,9 @@ function SideNav({ isOpen, isCollapsed, onClose, onToggleCollapse }) {
                   ? 'dash-sidenav__link dash-sidenav__link--active'
                   : 'dash-sidenav__link'
               }
-              onClick={onClose}
+              onClick={() => {
+                if (!isOnNavRoute(pathname, item)) onClose()
+              }}
             >
               <item.icon size={21} strokeWidth={2.1} />
               <span>{item.label}</span>
@@ -125,18 +139,21 @@ function InsightsPage() {
 }
 
 export default function App() {
-  const [isNavOpen, setIsNavOpen] = useState(false)
+  const [isNavOpen, setIsNavOpen] = useState(true)
   const [isNavCollapsed, setIsNavCollapsed] = useState(false)
+
+  useLayoutEffect(() => {
+    setIsNavOpen(true)
+  }, [])
 
   useEffect(() => {
     const mediaQuery = window.matchMedia('(min-width: 1024px)')
-    const syncNavWithViewport = (event) => {
-      setIsNavOpen(event.matches)
+    const openOnDesktop = () => {
+      if (mediaQuery.matches) setIsNavOpen(true)
     }
 
-    setIsNavOpen(mediaQuery.matches)
-    mediaQuery.addEventListener('change', syncNavWithViewport)
-    return () => mediaQuery.removeEventListener('change', syncNavWithViewport)
+    mediaQuery.addEventListener('change', openOnDesktop)
+    return () => mediaQuery.removeEventListener('change', openOnDesktop)
   }, [])
 
   return (

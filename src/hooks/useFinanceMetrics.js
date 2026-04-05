@@ -1,6 +1,21 @@
 import { useMemo } from 'react'
 import { monthKey } from '../utils/format'
+import {
+  balanceAtEndOfMonth,
+  balanceBeforeMonth,
+} from '../utils/financeAggregates'
 import { useFinanceStore } from '../store/useFinanceStore'
+
+/** @returns {Map<string, number>} expense totals per category for one yyyy-mm month */
+function expenseTotalsByCategoryForMonth(transactions, mk) {
+  const map = new Map()
+  if (!mk) return map
+  for (const t of transactions) {
+    if (t.type !== 'expense' || monthKey(t.date) !== mk) continue
+    map.set(t.category, (map.get(t.category) ?? 0) + t.amount)
+  }
+  return map
+}
 
 function compareTx(a, b, sortBy, sortDir) {
   const dir = sortDir === 'asc' ? 1 : -1
@@ -58,27 +73,53 @@ export function useSummary() {
   }, [openingBalance, transactions])
 }
 
-/** Running balance points by transaction for zig-zag trend chart */
-export function useBalanceTrendPoints() {
+/**
+ * One row per calendar month that has transactions — same rollups as Insights.
+ * @returns {Array<{
+ *   key: string,
+ *   shortLabel: string,
+ *   monthStartBalance: number,
+ *   balance: number,
+ *   income: number,
+ *   expense: number,
+ *   net: number,
+ * }>}
+ */
+export function useMonthlyBalanceTrend() {
   const openingBalance = useFinanceStore((s) => s.openingBalance)
   const transactions = useFinanceStore((s) => s.transactions)
 
   return useMemo(() => {
-    const sorted = [...transactions].sort(
-      (a, b) => new Date(a.date) - new Date(b.date),
-    )
-    const points = []
-    let running = openingBalance
-    for (const t of sorted) {
-      running += t.type === 'income' ? t.amount : -t.amount
-      points.push({
-        date: t.date,
-        balance: running,
-        type: t.type,
-        category: t.category,
-      })
-    }
-    return points
+    if (!transactions.length) return []
+    const monthSet = new Set(transactions.map((t) => monthKey(t.date)))
+    const keys = [...monthSet].sort()
+    return keys.map((key) => {
+      let income = 0
+      let expense = 0
+      for (const t of transactions) {
+        if (monthKey(t.date) !== key) continue
+        if (t.type === 'income') income += t.amount
+        else expense += t.amount
+      }
+      const [y, mo] = key.split('-').map(Number)
+      const shortLabel = new Intl.DateTimeFormat('en-US', {
+        month: 'short',
+        year: '2-digit',
+      }).format(new Date(y, mo - 1, 1))
+      return {
+        key,
+        shortLabel,
+        monthStartBalance: balanceBeforeMonth(
+          openingBalance,
+          transactions,
+          key,
+        ),
+        balance: balanceAtEndOfMonth(openingBalance, transactions, key),
+        income,
+        expense,
+        net: income - expense,
+      }
+    })
   }, [openingBalance, transactions])
 }
 
@@ -95,6 +136,28 @@ export function useSpendingByCategory() {
     return [...map.entries()]
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value)
+  }, [transactions])
+}
+
+/**
+ * Same month window as Insights “Where it went” (latest calendar month with any activity).
+ * @returns {{ monthKey: string | null, data: Array<{ name: string, value: number }> }}
+ */
+export function useSpendingByCategoryLatestMonth() {
+  const transactions = useFinanceStore((s) => s.transactions)
+
+  return useMemo(() => {
+    if (!transactions.length) return { monthKey: null, data: [] }
+    const monthsSorted = [
+      ...new Set(transactions.map((t) => monthKey(t.date))),
+    ].sort()
+    const lastM = monthsSorted[monthsSorted.length - 1] ?? null
+    if (!lastM) return { monthKey: null, data: [] }
+    const map = expenseTotalsByCategoryForMonth(transactions, lastM)
+    const data = [...map.entries()]
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value)
+    return { monthKey: lastM, data }
   }, [transactions])
 }
 
@@ -119,17 +182,7 @@ export function useInsights() {
       return { income, expense }
     }
 
-    function expensesByCategoryInMonth(mk) {
-      const map = new Map()
-      if (!mk) return map
-      for (const t of transactions) {
-        if (t.type !== 'expense' || monthKey(t.date) !== mk) continue
-        map.set(t.category, (map.get(t.category) ?? 0) + t.amount)
-      }
-      return map
-    }
-
-    const byCatMonth = expensesByCategoryInMonth(lastM)
+    const byCatMonth = expenseTotalsByCategoryForMonth(transactions, lastM)
     let topCat = null
     let topAmt = 0
     for (const [cat, amt] of byCatMonth) {
@@ -203,6 +256,14 @@ export function useInsights() {
     else if (savingsRatePct != null && savingsRatePct >= 25) savingsStatus = 'Solid'
     else if (savingsRatePct != null && savingsRatePct >= 0) savingsStatus = 'Steady'
 
+    const avgMonthlyExpense =
+      monthsSorted.length > 0
+        ? monthlyExpenses.reduce((s, e) => s + e, 0) / monthsSorted.length
+        : 0
+
+    const incomeChangeVsPriorMonth =
+      prevM != null ? cur.income - prev.income : null
+
     return {
       topCategory: topCat,
       topCategoryAmount: topAmt,
@@ -224,6 +285,8 @@ export function useInsights() {
       monthsCount: monthsSorted.length,
       monthlyExpenseBars,
       savingsStatus,
+      avgMonthlyExpense,
+      incomeChangeVsPriorMonth,
     }
   }, [transactions])
 }

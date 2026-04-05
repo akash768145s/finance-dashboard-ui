@@ -18,7 +18,7 @@ import { cloneDemoTransactions, FINANCE_DEMO_SEED } from '../data/mockData'
 const defaultState = {
   openingBalance: FINANCE_DEMO_SEED.openingBalance,
   transactions: cloneDemoTransactions(),
-  role: /** @type {Role} */ ('viewer'),
+  role: /** @type {Role} */ ('admin'),
   theme: /** @type {Theme} */ ('dark'),
   filterCategory: 'all',
   filterType: /** @type {FilterType} */ ('all'),
@@ -72,12 +72,6 @@ export const useFinanceStore = create(
         set((s) => ({
           transactions: s.transactions.filter((t) => t.id !== id),
         })),
-
-      resetDemoData: () =>
-        set({
-          openingBalance: FINANCE_DEMO_SEED.openingBalance,
-          transactions: cloneDemoTransactions(),
-        }),
     }),
     {
       name: 'finance-dashboard',

@@ -309,6 +309,12 @@
   );
 }
 
+.insh-panel--hero {
+  container-type: inline-size;
+  container-name: insh-hero;
+  min-width: 0;
+}
+
 .insh-panel--hero::before {
   background: radial-gradient(130% 90% at 12% -30%,
       color-mix(in oklab, var(--income) 24%, transparent),
@@ -465,30 +471,32 @@
   flex-wrap: wrap;
 }
 
-/* Hero — two-column balance: net figure + stat tiles */
+/* Hero — net figure + stat tiles; row only when the *card* is wide enough (avoids 2-col grid overflow) */
 .insh-hero__body {
   display: flex;
   flex-direction: column;
   gap: var(--insh-space-2);
   flex: 1 1 auto;
   min-height: 0;
+  min-width: 0;
+  width: 100%;
   justify-content: center;
 }
 
-@media (min-width: 560px) {
+@container insh-hero (min-width: 38rem) {
   .insh-panel--hero .insh-hero__body {
     flex-direction: row;
     align-items: stretch;
     gap: var(--insh-space-3);
   }
 
-  .insh-hero__primary {
+  .insh-panel--hero .insh-hero__primary {
     flex: 1.15;
     min-width: 0;
     justify-content: center;
   }
 
-  .insh-hero__stats {
+  .insh-panel--hero .insh-hero__stats {
     flex: 1;
     min-width: 0;
     max-width: 17rem;
@@ -500,6 +508,7 @@
   flex-direction: column;
   justify-content: center;
   gap: 8px;
+  min-width: 0;
 }
 
 .insh-hero__hint {
@@ -552,6 +561,12 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--insh-space-2);
   align-content: stretch;
+  min-width: 0;
+  width: 100%;
+}
+
+.insh-hero__stats .insh-stat {
+  min-width: 0;
 }
 
 @media (max-width: 380px) {

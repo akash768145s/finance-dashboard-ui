@@ -1,5 +1,5 @@
 import './dashboard.css'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   NavLink,
   Navigate,
@@ -140,22 +140,8 @@ function InsightsPage() {
 
 export default function App() {
   const location = useLocation()
-  const [isNavOpen, setIsNavOpen] = useState(true)
+  const [isNavOpen, setIsNavOpen] = useState(false)
   const [isNavCollapsed, setIsNavCollapsed] = useState(false)
-
-  useLayoutEffect(() => {
-    setIsNavOpen(true)
-  }, [])
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(min-width: 1024px)')
-    const openOnDesktop = () => {
-      if (mediaQuery.matches) setIsNavOpen(true)
-    }
-
-    mediaQuery.addEventListener('change', openOnDesktop)
-    return () => mediaQuery.removeEventListener('change', openOnDesktop)
-  }, [])
 
   return (
     <>

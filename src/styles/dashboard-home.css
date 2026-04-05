@@ -536,6 +536,9 @@
 }
 
 .dash-overview-card__icon--net {
+  width: 32px;
+  height: 32px;
+  border-radius: 11px;
   color: #0f6b8c;
   background: #dff4fb;
 }

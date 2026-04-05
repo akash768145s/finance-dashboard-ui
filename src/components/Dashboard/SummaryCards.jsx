@@ -138,7 +138,7 @@ export function SummaryCards() {
               Net Cash Flow
             </span>
             <span className="dash-overview-card__icon dash-overview-card__icon--net">
-              <Wallet size={16} />
+              <Wallet size={22} strokeWidth={2} />
             </span>
           </div>
           <p
